@@ -1,6 +1,5 @@
 clear all;
 close all;
-
 %% Initialisation des variables
 f_e = 20E6;                                     % fréquence d'échantillonnage 20MHz
 T_e = 1/f_e;
@@ -8,72 +7,58 @@ D_s = 1E6;                                      % débit symbole 1MHz
 T_s = 1/D_s;
 f_se = T_s/T_e;
 N_fft = 512;                                    % nombre de points pour la FFT
-N_bits = 1000;                                  % nombre de bits du message transmis
+N_bits = 1000;                                   % nombre de bits du message transmis
 f = ([0:N_fft-1]/N_fft - 0.5)*f_e;              % axe des fréquences
-
-%% Calculs de la question 11
-b_k = randi([0 1], 1, N_bits);                  % génération de la séquence binaire
-s_b = b_k;
-
-p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;         % filtre de mise en forme
-
-A_k = pammod(b_k, 2);                           % association bit->symbole
-s_s = upsample(A_k, f_se);                      % sur-échantillonnage au rythme T_e
-
-s_l = 1/2 + conv(s_s, p, 'same');               % signal s_l(t)
-
+iteration = 1E2;                                % nombre d'itérations pour le calcul du TEB
+EbN0 = 0:10;
 %% Question 14
+P_b = zeros(iteration,11);
 
-% Canal
-y_l = s_l;
+% p_O(-t)
+p_1_a = [zeros(1,f_se/2) ones(1,f_se/2) zeros(1,f_se)];
+% p_1(-t)
+p_0_a = ones(1,f_se/2);
+% p(t)
+p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
 
-% Decodage
-y_l = y_l - 1/2;
+for k = 1:iteration
+    for i = 0:10
+        sigma_n_l = 1/(2*(10.^(i/10)));                 % calcul de la variance du bruit en fonction du rapport SNR
 
-% Filtre adapte
-p_adapte = [ones(1,f_se/2) -ones(1,f_se/2)]/2;
-r = conv(y_l, p_adapte, 'same');
+        b_k = randi([0 1], 1, N_bits);                  % génération de la séquence binaire
+        s_b = b_k;
 
-% Sous-echantillonage
-r = downsample(r, f_se);
+        A_k = pammod(b_k, 2);                           % association bit->symbole
+        s_s = upsample(A_k, f_se);                      % sur-échantillonnage au rythme T_e
 
-% Decision
-b_k_hat = r;
-b_k_hat(b_k_hat > 0) = 1;
-b_k_hat(b_k_hat < 0) = 0;
+        s_l = 1/2 + conv(s_s, p, 'same');               % signal s_l(t)
 
-% Evolution du TEB en fonction de E_b/N_0
-P_b = zeros(0);
+        n_l = sqrt(sigma_n_l)*randn(1,length(s_l));     % simulation du bruit
 
-for i = 1:10
-    b_k = randi([0 1], 1, N_bits);
-    s_b = b_k;
-    A_k = pammod(b_k, 2);
-    s_s = upsample(A_k, f_se);
-    s_l = 1/2 + conv(s_s, p, 'same');
-    
-    sigma_n_l = 1/(2*(10.^(i/10)));
-    n_l = sqrt(sigma_n_l)*randn(1,length(s_l));
-    y_l = s_l + n_l;
-    y_l = y_l - 1/2;
-    
-    r = conv(y_l, p_adapte, 'same');
-    r = downsample(r, f_se);
-    
-    b_k_hat = r;
-    b_k_hat(b_k_hat > 0) = 1;
-    b_k_hat(b_k_hat < 0) = 0;
-    
-    P_b = [P_b sum(abs(b_k_hat-b_k))/N_bits];
+        y_l = s_l + n_l;
+
+        r_l_0 = conv(y_l, p_0_a, 'same');
+        r_0 = downsample(r_l_0, f_se);                  % r_0(k)
+
+        r_l_1 = conv(y_l, p_1_a, 'same');
+        r_1 = downsample(r_l_1, f_se);                  % r_1(k)
+
+        b_k_hat = double(r_0 < r_1);
+        P_b(k,i+1) = sum(b_k ~= b_k_hat)/N_bits;
+    end
 end
 
+% TEB pratique
+TEB = mean(P_b);
+TEB_th = 1/2*erfc(sqrt(10.^(EbN0/10)));
+
+% TEB théorique
 figure;
-EbN0 = 0:9;
-semilogy(EbN0,P_b);
+semilogy(EbN0, TEB);
 hold on
-semilogy(EbN0,1/2*erfc(sqrt(10.^(EbN0/10))),'r');
+semilogy(EbN0, TEB_th,'r');
 hold off
-title('Evolution du TEB et de la probabilite d''erreur binaire theorique');
-legend('TEB','Probabilite d''erreur binaire theorique');
+title('Evolution du TEB');
+legend('TEB pratique','TEB théorique');
 xlabel('(E_b/N_0)_{dB}');
 ylabel('TEB');
