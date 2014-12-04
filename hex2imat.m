@@ -1,10 +1,11 @@
 function [immatriculation] = hex2imat(adresse_hex)
     
-    data = fopen('icao24plus.txt');
+    adresse_hex = str2num(adresse_hex);
+    data = fopen('icao_imat.txt');
 
     while(~feof(data))
         line = fgetl(data);
-        A = sscanf(line, '%d');
+        A = sscanf(line, '%x');
         
         if (A(1) == adresse_hex)
             immatriculation = line;
