@@ -4,7 +4,7 @@ function [registre_maj] = bit2registre(vecteur, registre)
     lat_ref = 44.836316;	% Latitude de l'aéroport de Mérignac
 
     registre_maj.format = bin2num2str(vecteur(1:5));
-    registre_maj.adresse = bin2num2str(vecteur(9:32));
+    registre_maj.adresse = decodage_adresse(vecteur);
     
     FTC = bin2dec(num2str(vecteur(33:37)));
     registre_maj.type = num2str(FTC);
@@ -18,14 +18,14 @@ function [registre_maj] = bit2registre(vecteur, registre)
     registre_maj.cprFlag = bin2num2str(bit_CPR);
     [registre_maj.latitude, registre_maj.longitude] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
     
-    bits_controle = vecteur(89:end);
+    %bits_controle = vecteur(89:end);
     
     h = crc.detector([ones(1,13), 0, 1, zeros(1,6), 1, 0, 0, 1]);
-    [~, error] = detect(h, transpose(bits_controle));
+    [~, error] = detect(h, transpose(vecteur));
     
     if (error > 0)
         %registre_maj = registre;
-        disp('aie');
+        disp('Erreur CRC');
     end
 
 end
