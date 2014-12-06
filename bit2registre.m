@@ -1,4 +1,4 @@
-function [registre_maj] = bit2registre(vecteur, registre)
+function [registre_maj, erreur] = bit2registre(vecteur, registre)
 
     h = crc.detector([ones(1,13), 0, 1, zeros(1,6), 1, 0, 0, 1]);
     [~, erreur] = detect(h, transpose(vecteur));
@@ -25,8 +25,8 @@ function [registre_maj] = bit2registre(vecteur, registre)
         elseif (FTC > 8 && FTC ~= 19 && FTC < 23)
 
             % message de position
-            lon_ref = -0.710648;	% Longitude de l'aéroport de Mérignac
-            lat_ref = 44.836316;	% Latitude de l'aéroport de Mérignac
+            lon_ref = -0.710648;	% Longitude de l'a?roport de M?rignac
+            lat_ref = 44.836316;	% Latitude de l'a?roport de M?rignac
 
             registre_maj.altitude = decodage_altitude(vecteur(41:52));
             registre_maj.timeFlag = bin2num2str(vecteur(53));
@@ -35,7 +35,9 @@ function [registre_maj] = bit2registre(vecteur, registre)
 
             registre_maj.cprFlag = bin2num2str(bit_CPR);
             [registre_maj.latitude, registre_maj.longitude] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
-
+            lon = str2double(registre_maj.longitude);
+            lat = str2double(registre_maj.latitude);
+            registre_maj.trajectoire = [registre_maj.trajectoire, [lon;lat]];
         else
 
             % on ne modifie pas le registre
