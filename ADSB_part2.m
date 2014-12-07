@@ -50,16 +50,12 @@ end
 %% On actualise la carte
 for i = 1:length(registres)
     registre = registres(i);
-    for l = 1 : size(registre.trajectoire,2);
-        longitudes = registre.trajectoire(1,:);
-        latitudes = registre.trajectoire(2,:);
-        line(longitudes,latitudes);
-    end
+    longitudes = registre.trajectoire(1,:);
+    latitudes = registre.trajectoire(2,:);
+    fnplt(cscvn([longitudes;latitudes]),'b--',1)
     Id_airplane = registre.immatriculation; % Nom de l'avion
-    PLANE_LON = registre.trajectoire(1,l); % Longitude de l'avion
-    PLANE_LAT = registre.trajectoire(2,l); % Latitude de l'avion
+    PLANE_LON = registre.trajectoire(1,end); % Longitude de l'avion
+    PLANE_LAT = registre.trajectoire(2,end); % Latitude de l'avion
     plot(PLANE_LON,PLANE_LAT,'+b','MarkerSize',8);
-    line(PLANE_LON, PLANE_LAT);
-    text(PLANE_LON+0.05,PLANE_LAT,Id_airplane,'color','b');
-    
+    text(PLANE_LON+0.05,PLANE_LAT,Id_airplane,'color','b');  
 end

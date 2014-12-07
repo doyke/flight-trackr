@@ -6,21 +6,25 @@ ADSB
 ### ADSB_part1_1.m ###
 
 - Question 11 - Affichage de s_l(t) pour les 25 premiers bits
-- Question 12 - Diagramme de l'oeil de durÈe 2*T_s pour 100 bits
-- Question 13 - DSP de s_l(t) avec DSP thÈorique
+- Question 12 - Diagramme de l'oeil de dur√©e 2*T_s pour 100 bits
+- Question 13 - DSP de s_l(t) avec DSP th√©orique
 
 ### ADSB_part1_2.m ###
 
-- Question 14 - Calcul du TEB en fonction du SNR variant de 0 ‡ 10dB et valeur thÈorique de P_b --> OK
-- Question 15 - DÈmonstration pour l'argmax
+- Question 14 - Calcul du TEB en fonction du SNR variant de 0 √† 10dB et valeur th√©orique de P_b --> OK
+- Question 15 - D√©monstration pour l'argmax
 - Question 16 - Effet Doppler
 
 ### ADSB_part1_3.m ###
 
-- Question 17 - Algorithme de synchronisation temps/frÈquence et TEB --> TEB ‡ recalculer
+- Question 17 - Algorithme de synchronisation temps/fr√©quence et TEB --> TEB √† recalculer
 
-## Partie 2 - Traitement / dÈcodage de signaux rÈels ##
+## Partie 2 - Traitement / d√©codage de signaux r√©els ##
 
 - Question 18 - Valeurs du FTC pour des trames de position de vol / identification
 - Question 19 - bit2registre avec CRC
+- Question 20 - plot de la position de l'avion gr√¢ce aux trames de test
+- Question 21 - nom = 'AF255YO', immatriculation = 'F-GMZE' √† partir de l'adresse  = '393324'. Gr√¢ce √† une recherche dans la base de donn√©es de flightradar23.com <http://www.flightradar24.com/data/>, l'avion immatricul√© F-GMZE est un Airbus A321 appartenant √† Air France.
+Les trames de positions en vol nous ont permis de tracer sa trajectoire, en Italie :
 
+![plot_position_avion](https://github.com/eftov/ADSB/blob/master/plot_pos_F-GMZE.png)
