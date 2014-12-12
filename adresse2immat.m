@@ -1,6 +1,6 @@
 function [immat] = adresse2immat(adresse_dec)
     
-    fd = fopen('icao_imat.txt');
+    fd = fopen('icao24.txt');
     
     while (~feof(fd))
         line = fgetl(fd);
