@@ -8,7 +8,7 @@ T_s = 1/D_s;
 f_se = T_s/T_e;
 N_fft = 512;                                    % nombre de points pour la FFT
 N_bits = 112;                                   % nombre de bits du message transmis
-f = ((0:N_fft-1)/N_fft - 0.5)*f_e;              % axe des fréquences
+f = ((0:N_fft-1)/N_fft - 0.5)*f_e;              % axe des fr?quences
 EbN0 = 0:10;
 %% Question 14
 P_b = zeros(1,length(EbN0));

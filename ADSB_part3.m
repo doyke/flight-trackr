@@ -68,7 +68,6 @@ end
 
 % Lorsque le buffer est non-vide on commence le traitement
 disp('R?ception...')
-registres = [];
 
 %% Boucle principale
 while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
@@ -77,65 +76,6 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits ? 1 entier 16 bits
     cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
     %% Code utilisateur
-    %% cas ou ?a arrive en mal
-    
-    %% dans tous les cas
-    trame_test = transpose(cplxBuffer);
-    detected = 0;
-    trace = 0;
-    adresse = decodage_adresse(trame_test);
-    
-    % on regarde si on a d?j? r?pertori? cet avion
-    for i = 1:length(registres)
-        if strcmp(registres(i).adresse, adresse)
-            detected = 1;
-            registres(i) = bit2registre(trame_test, registres(i));
-            break;
-        end
-    end
-    
-    % sinon on cr?e un nouveau registre
-    if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude',[], ...
-                          'timeFlag', [], 'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
-        registre = bit2registre(trame_test, registre);
-        
-        % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
-        if (~isempty(registre.adresse))
-            registres = [registres, registre];
-            i = length(registres);
-        end
-    end
-    
-    if (~isempty(registres(i).trajectoire))
-        % si le registre a une trajectoire, on la (re)trace
-        longitudes = registres(i).trajectoire(1,:);
-        latitudes = registres(i).trajectoire(2,:);
-        
-        PLANE_LON = longitudes(end);    % Longitude de l'avion
-        PLANE_LAT = latitudes(end);     % Latitude de l'avion
-        
-        if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-            % on enl?ve ce qui a d?j? ?t? trac?
-            delete(registres(i).plot1);
-            delete(registres(i).plot2);
-            delete(registres(i).plot3);
-        end
-        
-        % si l'avion n'a pas d'immatriculation, on affiche son adresse
-        if (~isempty(registres(i).immatriculation))
-            Id_airplane = registres(i).immatriculation;
-        else
-            Id_airplane = registres(i).adresse;
-        end
-
-        points = fnplt(cscvn([longitudes;latitudes]));
-        
-        % finalement, on affiche les informations n?cessaires
-        registres(i).plot1 = plot(points(1,:),points(2,:), 'b:');
-        registres(i).plot2 = plot(PLANE_LON,PLANE_LAT,'*b', 'MarkerSize', 8);
-        registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT,Id_airplane,'color','b');  
-    end
 end
 
 %% fermeture des flux
@@ -143,5 +83,3 @@ socket.close;
 my_input_stream.close;
 my_server.close;
 disp (['Fin de connexion: ' datestr(now)]);
-
-

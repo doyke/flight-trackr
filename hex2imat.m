@@ -18,4 +18,3 @@ function [immatriculation] = hex2imat(adresse_hex)
     fclose(data);
 
 end
-

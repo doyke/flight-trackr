@@ -7,4 +7,3 @@ function [adresse_hex] = decodage_adresse(vecteur)
     adresse_hex = [adresse_hex_1 adresse_hex_2 adresse_hex_3];
 
 end
-

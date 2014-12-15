@@ -15,4 +15,3 @@ function [nom] = decodage_nom(vecteur)
     nom(isspace(nom)) = '';
 
 end
-

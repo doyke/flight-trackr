@@ -4,7 +4,7 @@ close all;
 trames = load('trames_20141120.mat');
 trames_test = trames.trames_20141120;
 
-registres = [];     % répertoire des registres
+registres = [];     % r?pertoire des registres
 
 %% La fonction plot_google_map affiche des longitudes/lattitudes en degr? d?cimaux,
 %MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
@@ -21,7 +21,7 @@ ylabel('Lattitude en degr?');
 
 hold on;
 
-%% Mise à jour des registres
+%% Mise ? jour des registres
 for k = 1:size(trames_test,2)
     
     trame_test = transpose(trames_test(:,k));
@@ -29,7 +29,7 @@ for k = 1:size(trames_test,2)
     trace = 0;
     adresse = decodage_adresse(trame_test);
     
-    % on regarde si on a déjà répertorié cet avion
+    % on regarde si on a d?j? r?pertori? cet avion
     for i = 1:length(registres)
         if strcmp(registres(i).adresse, adresse)
             detected = 1;
@@ -38,13 +38,13 @@ for k = 1:size(trames_test,2)
         end
     end
     
-    % sinon on crée un nouveau registre
+    % sinon on cr?e un nouveau registre
     if ~detected
         registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude',[], ...
                           'timeFlag', [], 'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
         registre = bit2registre(trame_test, registre);
         
-        % si pas d'erreur CRC, on l'ajoute dans le répertoire des registres
+        % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
         if (~isempty(registre.adresse))
             registres = [registres, registre];
             i = length(registres);
@@ -60,7 +60,7 @@ for k = 1:size(trames_test,2)
         PLANE_LAT = latitudes(end);     % Latitude de l'avion
         
         if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-            % on enlève ce qui a déjà été tracé
+            % on enl?ve ce qui a d?j? ?t? trac?
             delete(registres(i).plot1);
             delete(registres(i).plot2);
             delete(registres(i).plot3);
@@ -75,10 +75,9 @@ for k = 1:size(trames_test,2)
 
         points = fnplt(cscvn([longitudes;latitudes]));
         
-        % finalement, on affiche les informations nécessaires
+        % finalement, on affiche les informations n?cessaires
         registres(i).plot1 = plot(points(1,:),points(2,:), 'b:');
         registres(i).plot2 = plot(PLANE_LON,PLANE_LAT,'*b', 'MarkerSize', 8);
         registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT,Id_airplane,'color','b');  
     end
-    
 end
