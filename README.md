@@ -25,6 +25,6 @@ ADSB
 - Question 19 - bit2registre avec CRC
 - Question 20 - plot de la position de l'avion grâce aux trames de test
 - Question 21 - nom = 'AF255YO', immatriculation = 'F-GMZE' à partir de l'adresse  = '393324'. Grâce à une recherche dans la base de données de flightradar23.com <http://www.flightradar24.com/data/>, l'avion immatriculé F-GMZE est un Airbus A321 appartenant à Air France.
-Les trames de positions en vol nous ont permis de tracer sa trajectoire, en Italie :
+Les trames de positions en vol nous ont permis de tracer sa trajectoire, au décollage à Mérignac :
 
 ![plot_position_avion](https://github.com/eftov/ADSB/blob/master/plot_pos_F-GMZE.png)
