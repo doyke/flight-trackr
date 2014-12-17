@@ -45,6 +45,7 @@ for k = 1:size(trames_test,2)
         registre = bit2registre(trame_test, registre);
         
         % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
+        
         if (~isempty(registre.adresse))
             registres = [registres, registre];
             i = length(registres);
