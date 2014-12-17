@@ -41,6 +41,26 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
                     
                 registre_maj.taux = taux;
             end
+            
+        elseif (FTC > 4 && FTC < 9)
+             
+            % message de position au sol
+            % vitesse au sol à prendre en compte
+            
+            % message de position
+            lon_ref = -0.710648;	% Longitude de l'a?roport de M?rignac
+            lat_ref = 44.836316;	% Latitude de l'a?roport de M?rignac
+
+            registre_maj.timeFlag = bin2num2str(vecteur(53));
+
+            bit_CPR = vecteur(54);
+
+            registre_maj.cprFlag = bin2num2str(bit_CPR);
+            [registre_maj.latitude, registre_maj.longitude] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
+            lon = str2double(registre_maj.longitude);
+            lat = str2double(registre_maj.latitude);
+            registre_maj.trajectoire = [registre_maj.trajectoire, [lon;lat]];
+            
 
         elseif (FTC > 8 && FTC ~= 19 && FTC < 23)
 
