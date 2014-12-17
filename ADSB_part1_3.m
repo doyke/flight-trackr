@@ -62,6 +62,10 @@ for i = length(EbN0)
         
         r_l = conv(y_l_desync, p);
         
+        if (length(r_l) < N_bits * f_se)
+            r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
+        end
+        
         r = downsample(r_l(f_se:N_bits*f_se), f_se);
         
         b_k_hat = r < 0;

@@ -13,8 +13,7 @@ javaaddpath('./javaDataReader');
 
 %% Constants definition
 PORT = 1234;
-%MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-MER_LON = 10;
+MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
 MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
 
 %% Param?tres Utilisateur
@@ -37,7 +36,7 @@ sigma_n_l = 1;
 N_bits = 112;
 
 Ts = 1/Rb;
-s_p = [1 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0];                % s_p au rythme 0.5?s
+s_p = [1 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0];
 s_p = upsample(s_p, Ts/(0.5E-6));
 
 p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
@@ -109,13 +108,22 @@ drawnow
     n_l = sqrt(sigma_n_l)*randn(1,length(s_l_sync));
 
     % r?ception
-    cplxBuffer = s_l_sync + n_l;
+    y = s_l_sync + n_l;
     
     %int8Buffer = y_l;
     %int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits ? 1 entier 16 bits
     %cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
     %% Code utilisateur
     %%
+    y_I = y .* cos(2*pi*Fc*(0:length(y)-1));
+    y_Q = y .* sin(2*pi*Fc*(0:length(y)-1));
+    
+    % filtre passe bande
+    offset = -10;
+    cplxBuffer = y_I - 1i * y_Q + offset;
+    
+    % estimation de l'offset
+    test = 1/length(cplxBuffer) * real(sum(cplxBuffer)) - 1;
     
     [delta_t_hat, delta_f_hat] = estimation(cplxBuffer, s_p, T_e);
     
@@ -123,7 +131,11 @@ drawnow
     y_l_desync = cplxBuffer(length(s_p)+delta_t_hat+1:end).*exp(1i*2*pi*delta_f_hat.*(1:length(cplxBuffer)-length(s_p)-delta_t_hat));
 
     r_l = conv(y_l_desync, p);
-
+    
+    if (length(r_l) < N_bits * f_se)
+        r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
+    end
+    
     r = downsample(r_l(f_se:N_bits*f_se), f_se);
 
     trame = r < 0;

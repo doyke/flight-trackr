@@ -8,7 +8,6 @@ registres = [];     % r?pertoire des registres
 
 %% La fonction plot_google_map affiche des longitudes/lattitudes en degr? d?cimaux,
 MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-%MER_LON = 10.5;
 MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
 
 figure(1);
@@ -56,9 +55,11 @@ for k = 1:size(trames_test,2)
         % si le registre a une trajectoire, on la (re)trace
         longitudes = registres(i).trajectoire(1,:);
         latitudes = registres(i).trajectoire(2,:);
+        altitudes = registres(i).trajectoire(3,:);
         
         PLANE_LON = longitudes(end);    % Longitude de l'avion
         PLANE_LAT = latitudes(end);     % Latitude de l'avion
+        PLANE_ALT = altitudes(end);
         
         if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
             % on enl?ve ce qui a d?j? ?t? trac?
@@ -74,11 +75,11 @@ for k = 1:size(trames_test,2)
             Id_airplane = registres(i).adresse;
         end
 
-        points = fnplt(cscvn([longitudes;latitudes]));
+        points = fnplt(cscvn([longitudes;latitudes;altitudes]));
         
         % finalement, on affiche les informations n?cessaires
-        registres(i).plot1 = plot(points(1,:),points(2,:), 'b:');
-        registres(i).plot2 = plot(PLANE_LON,PLANE_LAT,'*b', 'MarkerSize', 8);
-        registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT,Id_airplane,'color','b');  
+        registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
+        registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT, PLANE_ALT,'*b', 'MarkerSize', 8);
+        registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT, PLANE_ALT,Id_airplane,'color','b');
     end
 end

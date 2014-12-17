@@ -37,7 +37,7 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
             [registre_maj.latitude, registre_maj.longitude] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
             lon = str2double(registre_maj.longitude);
             lat = str2double(registre_maj.latitude);
-            registre_maj.trajectoire = [registre_maj.trajectoire, [lon;lat]];
+            registre_maj.trajectoire = [registre_maj.trajectoire, [lon;lat;str2double(registre_maj.altitude)*0.3048]];
         else
 
             % on ne modifie pas le registre

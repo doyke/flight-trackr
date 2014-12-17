@@ -23,7 +23,7 @@ function [lat, lon] = decodage_latitude_longitude(r_lat, r_lon, lat_ref, lon_ref
     if (N_L_lat_i > 0)
         D_lon_i = 360 / N_L_lat_i;
     elseif (N_L_lat_i == 0)
-        D_lon_i = 360
+        D_lon_i = 360;
     end
     
     % 2- calcul de m
