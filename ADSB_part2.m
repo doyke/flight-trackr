@@ -7,8 +7,8 @@ trames_test = trames.trames_20141120;
 registres = [];     % r?pertoire des registres
 
 %% La fonction plot_google_map affiche des longitudes/lattitudes en degr? d?cimaux,
-%MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-MER_LON = 10.5;
+MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
+%MER_LON = 10.5;
 MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
 
 figure(1);
@@ -52,7 +52,7 @@ for k = 1:size(trames_test,2)
         end
     end
     
-    if (~isempty(registres(i).trajectoire))
+    if (~isempty(registres) && ~isempty(registres(i).trajectoire))
         % si le registre a une trajectoire, on la (re)trace
         longitudes = registres(i).trajectoire(1,:);
         latitudes = registres(i).trajectoire(2,:);

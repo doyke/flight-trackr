@@ -10,24 +10,24 @@ function [lat, lon] = decodage_latitude_longitude(r_lat, r_lon, lat_ref, lon_ref
     D_lat_i = 360 / (4*N_Z - bit_CPR);
     
     % 2- calcul de j
-    j = fix(lat_ref/D_lat_i) + fix(1/2 + MOD(lat_ref, D_lat_i) / D_lat_i - LAT /(2^N_b));
+    j = floor(lat_ref/D_lat_i) + floor(1/2 + MOD(lat_ref, D_lat_i) / D_lat_i - LAT /(2^N_b));
     
     % 3- calcul de la latitude
-    lat = troisieme_calcul(D_lat_i, LAT, j, N_b);
-    lat = num2str(lat);
+    lat_num = troisieme_calcul(D_lat_i, LAT, j, N_b);
+    lat = num2str(lat_num);
     
     %% Longitude
     % 1- calcul de D_lon_i
-    N_L_lat_i = cprNL(lat) - bit_CPR;
+    N_L_lat_i = cprNL(lat_num) - bit_CPR;
     
     if (N_L_lat_i > 0)
         D_lon_i = 360 / N_L_lat_i;
     elseif (N_L_lat_i == 0)
-        D_lon_i = 360;
+        D_lon_i = 360
     end
     
     % 2- calcul de m
-    m = fix(lon_ref/D_lat_i) + fix(1/2 + MOD(lon_ref, D_lon_i) / D_lon_i - LON /(2^N_b));
+    m = floor(lon_ref/D_lon_i) + floor(1/2 + MOD(lon_ref, D_lon_i) / D_lon_i - LON /(2^N_b));
     
     % 3- calcul de la longitude
     lon = troisieme_calcul(D_lon_i, LON, m, N_b);
@@ -35,7 +35,7 @@ function [lat, lon] = decodage_latitude_longitude(r_lat, r_lon, lat_ref, lon_ref
 end
 
 function [mod] = MOD(x,y)
-    mod = x - y * fix(x/y);
+    mod = x - y * floor(x/y);
 end
 
 function [l] = troisieme_calcul(D, L, lettre, N_b)
