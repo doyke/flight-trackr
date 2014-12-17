@@ -39,8 +39,9 @@ for k = 1:size(trames_test,2)
     
     % sinon on cr?e un nouveau registre
     if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude',[], ...
-                          'timeFlag', [], 'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
+        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude', [], ...
+                          'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], 'cprFlag', [], 'latitude', [], ...
+                          'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
         registre = bit2registre(trame_test, registre);
         
         % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres

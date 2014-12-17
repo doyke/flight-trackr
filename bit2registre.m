@@ -21,6 +21,26 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
 
             % message d'identification : on identifie l'avion
             registre_maj.nom = decodage_nom(vecteur);
+        
+        elseif (FTC == 19)
+            
+            % message de vitesse en vol
+            subtype = bin2dec(num2str(vecteur(38:40)));
+            
+            [registre_maj.vitesse_air, registre_maj.vitesse_sol] = decodage_vitesse(vecteur, subtype);
+            
+            % taux de montée/descente
+            % seulement si info sur le taux
+            if (~bin2dec(num2str(vecteur(70:78))))
+                taux = bin2dec(num2str(vecteur(70:78))) * 64 - 64;
+                    
+                signe = vecteur(69);
+                if (signe == 1)
+                    taux = -taux;
+                end
+                    
+                registre_maj.taux = taux;
+            end
 
         elseif (FTC > 8 && FTC ~= 19 && FTC < 23)
 
