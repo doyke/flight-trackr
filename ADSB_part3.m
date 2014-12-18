@@ -126,8 +126,9 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     
     % sinon on crée un nouveau registre
     if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude',[], ...
-                          'timeFlag', [], 'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
+        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude', [], ...
+                          'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], 'cprFlag', [], 'latitude', [], ...
+                          'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
         registre = bit2registre(trame, registre);
         
         % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
