@@ -1,4 +1,6 @@
-URL='jdbc:sqlite:/Users/Benjamin/Desktop/Git/GitHub/ADSB/PlaneInfo.db';
+dbpath = [pwd '/PlaneInfo.db'];
+URL = ['jdbc:sqlite:' dbpath];
+
 conn = database('','','','org.sqlite.JDBC',URL);
 
 address = '393324';
