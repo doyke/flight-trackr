@@ -4,7 +4,10 @@ clear all
 close all
 clc
 
-address = '393324';
+%address = 'A2C802';
+%address = 'A41F1D';
+%address = '009826';
+address = '34444D';
 
 % try (pour si pas de connexion)
 try
@@ -15,6 +18,14 @@ try
         struct = data{1};
         disp(struct);
         immat = struct.id;
+        label = struct.label;
+        
+        separator = strfind(label, ' - ');
+        airline = label(separator(2)+3:separator(3)-1);
+        
+        category = label(separator(3)+3:end);
+        separator_category = strfind(category, ' (');
+        category = category(1:separator_category-1);
     end
 catch
 end
