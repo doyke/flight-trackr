@@ -5,9 +5,9 @@ function [immat] = adresse2immat(adresse)
 
     conn = database('','','','org.sqlite.JDBC',URL);
 
-    adresse = ['"' adresse '"'];
+    adresse_query = ['"' adresse '"'];
 
-    sqlquery = ['select immat from immatriculation where address = ' adresse];
+    sqlquery = ['select immat from immatriculation where address = ' adresse_query];
 
     curs = exec(conn,sqlquery);
     curs = fetch(curs);
@@ -46,7 +46,7 @@ function [immat] = adresse2immat(adresse)
         tablename = 'immatriculation';
         colnames = {'address','immat','category','country','airline'};
 
-        data = {address, immat, category, '', airline};
+        data = {adresse, immat, category, '', airline};
 
         datainsert(conn2, tablename, colnames, data);
 

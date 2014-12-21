@@ -6,10 +6,11 @@ URL = ['jdbc:sqlite:' dbpath];
 
 conn = database('','','','org.sqlite.JDBC',URL);
 
-address = 'XXYYZZ';
-address = ['"' address '"'];
+address = '391559';
+%address = '393324';
+address_query = ['"' address '"'];
 
-sqlquery = ['select immat from immatriculation where address = ' address];
+sqlquery = ['select immat from immatriculation where address = ' address_query];
 
 curs = exec(conn,sqlquery);
 curs = fetch(curs);
