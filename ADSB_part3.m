@@ -47,8 +47,8 @@ figure(1);
 plot(MER_LON,MER_LAT,'.r','MarkerSize',20);
 text(MER_LON+0.05,MER_LAT,'Merignac airport','color','b') % On affiche l'a?roport de M?rignac sur la carte
 plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
-xlabel('Longitude en degr?');
-ylabel('Lattitude en degr?');
+xlabel('Longitude en degre');
+ylabel('Lattitude en degre');
 hold on
 drawnow
 
@@ -126,12 +126,12 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     
     % sinon on crée un nouveau registre
     if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude', [], ...
-                          'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], 'cprFlag', [], 'latitude', [], ...
-                          'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
+        registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
+                          'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
+                          'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
         registre = bit2registre(trame, registre);
         
-        % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
+        % si pas d'erreur CRC, on l'ajoute dans le repertoire des registres
         if (~isempty(registre.adresse))
             registres = [registres, registre];
             i = length(registres);

@@ -10,10 +10,8 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
 
         registre_maj = registre;
         registre_maj.format = bin2num2str(vecteur(1:5));
-        %adresse_decimale = bin2num2str(vecteur(9:32));
-        %registre_maj.immatriculation = adresse2immat(str2double(adresse_decimale));
         registre_maj.adresse = decodage_adresse(vecteur);
-        registre_maj.immatriculation = adresse2immat(registre_maj.adresse);
+        [registre_maj.immatriculation, registre_maj.airline, registre_maj.categorie, registre_maj.pays] = adresse2immat(registre_maj.adresse);
 
         FTC = bin2dec(num2str(vecteur(33:37)));
         registre_maj.type = num2str(FTC);

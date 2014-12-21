@@ -4,23 +4,23 @@ close all;
 trames = load('trames_20141120.mat');
 trames_test = trames.trames_20141120;
 
-registres = [];     % r?pertoire des registres
+registres = [];     % repertoire des registres
 
-%% La fonction plot_google_map affiche des longitudes/lattitudes en degr? d?cimaux,
-MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
+%% La fonction plot_google_map affiche des longitudes/lattitudes en degre decimaux,
+MER_LON = -0.710648; % Longitude de l'aeroport de Merignac
+MER_LAT = 44.836316; % Latitude de l'aeroport de Merignac
 
 figure(1);
-plot(MER_LON,MER_LAT,'.r','MarkerSize',20);% On affiche l'a?roport de M?rignac sur la carte
+plot(MER_LON,MER_LAT,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
 text(MER_LON+0.05,MER_LAT,'Merignac airport','color','r')
 plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
 
-xlabel('Longitude en degr?');
-ylabel('Lattitude en degr?');
+xlabel('Longitude en degre');
+ylabel('Lattitude en degre');
 
 hold on;
 
-%% Mise ? jour des registres
+%% Mise a jour des registres
 for k = 1:size(trames_test,2)
     
     trame_test = transpose(trames_test(:,k));
@@ -28,7 +28,7 @@ for k = 1:size(trames_test,2)
     trace = 0;
     adresse = decodage_adresse(trame_test);
     
-    % on regarde si on a d?j? r?pertori? cet avion
+    % on regarde si on a deja repertorie cet avion
     for i = 1:length(registres)
         if strcmp(registres(i).adresse, adresse)
             detected = 1;
@@ -37,14 +37,14 @@ for k = 1:size(trames_test,2)
         end
     end
     
-    % sinon on cr?e un nouveau registre
+    % sinon on cree un nouveau registre
     if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'format', [], 'type', [], 'nom', [], 'altitude', [], ...
-                          'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], 'cprFlag', [], 'latitude', [], ...
-                          'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
+        registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
+                          'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
+                          'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
         registre = bit2registre(trame_test, registre);
         
-        % si pas d'erreur CRC, on l'ajoute dans le r?pertoire des registres
+        % si pas d'erreur CRC, on l'ajoute dans le repertoire des registres
         
         if (~isempty(registre.adresse))
             registres = [registres, registre];
@@ -63,7 +63,7 @@ for k = 1:size(trames_test,2)
         PLANE_ALT = altitudes(end);
         
         if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-            % on enl?ve ce qui a d?j? ?t? trac?
+            % on enleve ce qui a deja ete trace
             delete(registres(i).plot1);
             delete(registres(i).plot2);
             delete(registres(i).plot3);
@@ -78,7 +78,7 @@ for k = 1:size(trames_test,2)
 
         points = fnplt(cscvn([longitudes;latitudes;altitudes]));
         
-        % finalement, on affiche les informations n?cessaires
+        % finalement, on affiche les informations necessaires
         registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
         registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT, PLANE_ALT,'*b', 'MarkerSize', 8);
         registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT, PLANE_ALT,Id_airplane,'color','b');
