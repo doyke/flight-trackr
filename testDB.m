@@ -9,6 +9,13 @@ sqlquery = ['select immat from immatriculation where address = ' address];
 
 curs = exec(conn,sqlquery);
 curs = fetch(curs);
-curs.Data
+immat = cell2mat(curs.Data);
 
+close(curs);
 close(conn);
+
+% tablename = 'immatriculation';
+%
+% datainsert(conn,tablename,colnames,data);
+
+url = urlread('http://www.flightradar24.com/data/airplanes/f-gmze/');
