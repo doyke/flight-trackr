@@ -18,5 +18,9 @@ close(conn);
 %
 % datainsert(conn,tablename,colnames,data);
 
-url = urlread('http://www.flightradar24.com/data/airplanes/f-gmze/');
+url_to_search = ['http://www.flightradar24.com/data/_ajaxcalls/autocomplete_airplanes.php?&term=' address];
+url = urlread(url_to_search);
+
+
+
 % autre db : 'http://virad.openskymap.net/VM512/IcaoReport.htm?icao=393324'
