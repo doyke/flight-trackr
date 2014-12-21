@@ -28,3 +28,7 @@ ADSB
 Les trames de positions en vol nous ont permis de tracer sa trajectoire, au décollage à Mérignac :
 
 ![plot_position_avion](https://github.com/eftov/ADSB/blob/master/plot_pos_F-GMZE.png)
+
+## Remarques ##
+
+Afin de pouvoir utiliser la base de données, il faut installer le driver JDBC SQlite : http://fr.mathworks.com/help/database/ug/sqlite-jdbc-mac.html#bt543pd-1

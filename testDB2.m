@@ -4,10 +4,7 @@ clear all
 close all
 clc
 
-%address = 'A2C802';
-%address = 'A41F1D';
-%address = '009826';
-address = '34444D';
+address = 'A2C802';
 
 % try (pour si pas de connexion)
 try
@@ -29,3 +26,17 @@ try
     end
 catch
 end
+
+dbpath = [pwd '/PlaneInfo.db'];
+URL = ['jdbc:sqlite:' dbpath];
+
+conn = database('','','','org.sqlite.JDBC',URL);
+
+tablename = 'immatriculation';
+colnames = {'address','immat','category','country','airline'};
+data = {address, immat, category,'', airline};
+
+datainsert(conn, tablename, colnames, data);
+
+close(conn);
+
