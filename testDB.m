@@ -19,3 +19,4 @@ close(conn);
 % datainsert(conn,tablename,colnames,data);
 
 url = urlread('http://www.flightradar24.com/data/airplanes/f-gmze/');
+% autre db : 'http://virad.openskymap.net/VM512/IcaoReport.htm?icao=393324'
