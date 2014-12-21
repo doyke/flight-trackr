@@ -1,26 +1,19 @@
-function [immat] = adresse2immat(adresse_dec)
+function [immat] = adresse2immat(adresse)
     
-    fd = fopen('icao.txt');
-    
-    while (~feof(fd))
-        line = fgetl(fd);
-        A = sscanf(line, '%x');
-        if (A(1) == adresse_dec)
-            pos = find(isspace(sscanf(line,'%s%c')));
-            
-            debut = pos(1)+1;
-            
-            if (length(pos) == 1)
-                fin = length(line);
-            else
-                fin = pos(2)-1;
-            end
-            
-            immat = line(debut:fin);
-            break;
-        end
-    end
-    
-    fclose(fd);
+    dbpath = [pwd '/PlaneInfo.db'];
+    URL = ['jdbc:sqlite:' dbpath];
+
+    conn = database('','','','org.sqlite.JDBC',URL);
+
+    adresse = ['"' adresse '"'];
+
+    sqlquery = ['select immat from immatriculation where address = ' adresse];
+
+    curs = exec(conn,sqlquery);
+    curs = fetch(curs);
+    immat = cell2mat(curs.Data);
+
+    close(curs);
+    close(conn);
 
 end

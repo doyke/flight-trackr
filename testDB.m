@@ -1,12 +1,13 @@
 % Requete dans la bdd des infos sur les avions, au lieu de la recherche
-% dans le fichier txt
+% dans le fichier txt. Remplacer dans addresse2immat
 
 dbpath = [pwd '/PlaneInfo.db'];
 URL = ['jdbc:sqlite:' dbpath];
 
 conn = database('','','','org.sqlite.JDBC',URL);
 
-address = '"393324"';
+address = '7805D6';
+address = ['"' address '"'];
 
 sqlquery = ['select immat from immatriculation where address = ' address];
 
@@ -16,6 +17,3 @@ immat = cell2mat(curs.Data);
 
 close(curs);
 close(conn);
-
-% tablename = 'immatriculation';
-% datainsert(conn,tablename,colnames,data);
