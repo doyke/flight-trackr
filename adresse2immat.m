@@ -41,16 +41,16 @@ function [immat] = adresse2immat(adresse)
         dbpath = [pwd '/PlaneInfo.db'];
         URL = ['jdbc:sqlite:' dbpath];
 
-        conn = database('','','','org.sqlite.JDBC',URL);
+        conn2 = database('','','','org.sqlite.JDBC',URL);
 
         tablename = 'immatriculation';
         colnames = {'address','immat','category','country','airline'};
 
-        data = {address, immat, category,'', airline};
+        data = {address, immat, category, '', airline};
 
-        datainsert(conn, tablename, colnames, data);
+        datainsert(conn2, tablename, colnames, data);
 
-        close(conn);
+        close(conn2);
 
     end
 
