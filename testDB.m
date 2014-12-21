@@ -1,9 +1,12 @@
+% Requete dans la bdd des infos sur les avions, au lieu de la recherche
+% dans le fichier txt
+
 dbpath = [pwd '/PlaneInfo.db'];
 URL = ['jdbc:sqlite:' dbpath];
 
 conn = database('','','','org.sqlite.JDBC',URL);
 
-address = '393324';
+address = '"393324"';
 
 sqlquery = ['select immat from immatriculation where address = ' address];
 
@@ -15,12 +18,4 @@ close(curs);
 close(conn);
 
 % tablename = 'immatriculation';
-%
 % datainsert(conn,tablename,colnames,data);
-
-url_to_search = ['http://www.flightradar24.com/data/_ajaxcalls/autocomplete_airplanes.php?&term=' address];
-url = urlread(url_to_search);
-
-
-
-% autre db : 'http://virad.openskymap.net/VM512/IcaoReport.htm?icao=393324'

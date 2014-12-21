@@ -1,3 +1,5 @@
+% Ajout dans la bdd pour un avion n'existant pas encore
+
 clear all
 close all
 clc
