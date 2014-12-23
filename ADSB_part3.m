@@ -48,7 +48,7 @@ plot(MER_LON,MER_LAT,'.r','MarkerSize',20);
 text(MER_LON+0.05,MER_LAT,'Merignac airport','color','b') % On affiche l'a?roport de M?rignac sur la carte
 plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
 xlabel('Longitude en degre');
-ylabel('Lattitude en degre');
+ylabel('Latitude en degre');
 hold on
 drawnow
 

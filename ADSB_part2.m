@@ -16,7 +16,7 @@ text(MER_LON+0.05,MER_LAT,'Merignac airport','color','r')
 plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
 
 xlabel('Longitude en degre');
-ylabel('Lattitude en degre');
+ylabel('Latitude en degre');
 
 hold on;
 
