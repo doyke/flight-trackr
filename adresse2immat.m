@@ -17,6 +17,7 @@ function [immat, airline, category, country] = adresse2immat(adresse)
     % flightradar24
     if (strcmp(cursData, 'No Data'))
         
+        country = [];
         [found, immat, airline, category] = flightradar_reader(adresse);
         
         if (found)
