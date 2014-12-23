@@ -16,7 +16,7 @@ PORT = 1234;
 MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
 MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
 
-%% ParamËtres Utilisateur
+%% Param√®tres Utilisateur
 Fc = 1090e6; % La fr?quence porteuse
 Rs = 4e6; % Le rythme d'?chantillonnage (pas plus de 4Mhz)
 T_e = 1/Rs;
@@ -84,11 +84,11 @@ disp('R?ception...')
 while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     disp('new buffer')
     int8Buffer = data_reader.readBuffer(cplxSamplesInBuffer*4)'; % Un complexe est cod? sur 2 entiers 16 bits soit 4 octets et readBuffer lit des octets.
-    int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits ‡ 1 entier 16 bits
+    int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits √† 1 entier 16 bits
     cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
     %% Code utilisateur
     
-    % premiËre estimation grossiËre de l'offset
+    % premi√®re estimation grossi√®re de l'offset
     offset1 = real(mean(cplxBuffer));
     y = cplxBuffer - offset1;
     
@@ -115,7 +115,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     trace = 0;
     adresse = decodage_adresse(trame);
     
-    % on regarde si on a dÈj‡ rÈpertoriÈ cet avion
+    % on regarde si on a d√©j√† r√©pertori√© cet avion
     for i = 1:length(registres)
         if strcmp(registres(i).adresse, adresse)
             detected = 1;
@@ -124,7 +124,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
         end
     end
     
-    % sinon on crÈe un nouveau registre
+    % sinon on cr√©e un nouveau registre
     if ~detected
         registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
                           'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
@@ -135,10 +135,13 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
         if (~isempty(registre.adresse))
             registres = [registres, registre];
             i = length(registres);
+        else
+            % sinon on a eu une erreur CRC, on passe √† la suite
+            continue;
         end
     end
     
-    if (~isempty(registres(i).trajectoire))
+    if (~isempty(registres) && ~isempty(registres(i).trajectoire))
         % si le registre a une trajectoire, on la (re)trace
         longitudes = registres(i).trajectoire(1,:);
         latitudes = registres(i).trajectoire(2,:);
@@ -149,7 +152,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
         PLANE_ALT = altitudes(end);
         
         if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-            % on enlËve ce qui a d?j? ?t? trac?
+            % on enl√®ve ce qui a d?j? ?t? trac?
             delete(registres(i).plot1);
             delete(registres(i).plot2);
             delete(registres(i).plot3);
