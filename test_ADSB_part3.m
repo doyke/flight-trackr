@@ -90,6 +90,9 @@ drawnow
     abs_cplxBuffer = load('abs_cplxBuffer.mat');
     cplxBuffer = abs_cplxBuffer.abs_cplxBuffer;
     
+    figure, plot(cplxBuffer);
+    % décroissance en exponentielle observée
+    
     % premiÃ¨re estimation grossiÃ¨re de l'offset
     offset1 = real(mean(cplxBuffer));
     y = cplxBuffer - offset1;
