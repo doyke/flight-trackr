@@ -4,98 +4,40 @@ function [immat, airline, category, country] = adresse2immat(adresse)
     URL = ['jdbc:sqlite:' dbpath];
 
     conn = database('','','','org.sqlite.JDBC',URL);
+    tablename = 'immatriculation';
+    colnames = {'address','immat','category','country','airline'};
     
     adresse_quote = ['"' adresse '"'];
-    address_query = ['select immat from immatriculation where address = ' adresse_quote];
+    address_query = ['select * from immatriculation where address = ' adresse_quote];
     curs = exec(conn,address_query);
     curs = fetch(curs);
-    immat = cell2mat(curs.Data);
-
-    airline_query = ['select airline from immatriculation where address = ' adresse_quote];
-    curs = exec(conn,airline_query);
-    curs = fetch(curs);
-    airline = cell2mat(curs.Data);
-
-    category_query = ['select category from immatriculation where address = ' adresse_quote];
-    curs = exec(conn,category_query);
-    curs = fetch(curs);
-    category = cell2mat(curs.Data);
-
-    country_query = ['select country from immatriculation where address = ' adresse_quote];
-    curs = exec(conn,country_query);
-    curs = fetch(curs);
-    country = cell2mat(curs.Data);
+    cursData = curs.Data;
     
     % Si l'avion n'est pas dans la bdd, on l'ajoute avec les infos de
     % flightradar24
-    if (strcmp(immat, 'No Data'))
-
-        immat = [];
-        % try (si pas de connexion)
-        try
-            data = loadjson(urlread(['http://www.flightradar24.com/data/_ajaxcalls/autocomplete_airplanes.php?&term=', adresse]));
-
-            if (~isempty(data))
-                % si on a trouve qque ch
-                struct = data{1};
-                %disp(struct);
-                immat = struct.id;
-                label = struct.label;
-
-                separator = strfind(label, ' - ');
-                airline = label(separator(2)+3:separator(3)-1);
-
-                category = label(separator(3)+3:end);
-                separator_category = strfind(category, ' (');
-                category = category(1:separator_category-1);
-                
-                
-                dbpath = [pwd '/PlaneInfo.db'];
-                URL = ['jdbc:sqlite:' dbpath];
-
-                conn2 = database('','','','org.sqlite.JDBC',URL);
-
-                tablename = 'immatriculation';
-                colnames = {'address','immat','category','country','airline'};
-
+    if (strcmp(cursData, 'No Data'))
+        
+        [found, immat, airline, category] = flightradar_reader(adresse);
+        
+        if (found)
                 data = {adresse, immat, category, '', airline};
+                datainsert(conn, tablename, colnames, data);
 
-                datainsert(conn2, tablename, colnames, data);
-
-                close(conn2);
-            end
-        catch
         end
-
-    end
     
     % pour un avion déjà dans la bdd mais sans airline
     % update aussi la categorie
-    if (strcmp(airline, 'null') || strcmp(airline, ''))
+    else
         
-        % try (si pas de connexion)
-        try
-            data = loadjson(urlread(['http://www.flightradar24.com/data/_ajaxcalls/autocomplete_airplanes.php?&term=', adresse]));
-            
-            if (~isempty(data))
-                % si on a trouve qque ch
-                struct = data{1};
-                %disp(struct);
-                immat = struct.id;
-                label = struct.label;
+        immat = cursData{2};
+        category = cursData{3};
+        country = cursData{4};
+        airline = cursData{5};
+        
+        if (isempty(airline) || strcmp(airline, 'null') || isempty(category) || strcmp(category, 'null'))
+            [found, ~, airline, category] = flightradar_reader(adresse);
 
-                separator = strfind(label, ' - ');
-                airline = label(separator(2)+3:separator(3)-1);
-
-                category = label(separator(3)+3:end);
-                separator_category = strfind(category, ' (');
-                category = category(1:separator_category-1);
-                
-                dbpath = [pwd '/PlaneInfo.db'];
-                URL = ['jdbc:sqlite:' dbpath];
-
-                conn2 = database('','','','org.sqlite.JDBC',URL);
-
+            if (found)
                 airline_quote = ['"' airline '"'];
                 insert_query = ['update immatriculation set airline = ' airline_quote ' where address = ' adresse_quote];
                 curs = exec(conn, insert_query);
@@ -103,15 +45,14 @@ function [immat, airline, category, country] = adresse2immat(adresse)
 
                 category_quote = ['"' category '"'];
                 insert_query = ['update immatriculation set category = ' category_quote ' where address = ' adresse_quote];
-                curs2 = exec(conn, insert_query);
-                close(curs2);
-
-                close(conn2);
-                
+                curs = exec(conn, insert_query);
+                close(curs);
             end
-        catch
         end
-
+        
+        if (isempty(country) || strcmp(country, 'null'))
+            country = [];
+        end
     end
 
     close(curs);
