@@ -49,6 +49,9 @@ for k = 1:size(trames_test,2)
         if (~isempty(registre.adresse))
             registres = [registres, registre];
             i = length(registres);
+        else
+            % sinon on a eu une erreur CRC, on passe à la suite
+            continue;
         end
     end
     
