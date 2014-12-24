@@ -12,8 +12,9 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
         registre_maj.format = bin2num2str(vecteur(1:5));
         registre_maj.adresse = decodage_adresse(vecteur);
         
+        % si l'adresse n'est pas sur 24 bits
         if (length(registre_maj.adresse) ~= 6)
-            registre_maj.adresse = 'Not valid';
+            registre_maj.adresse = 'Unidentified';
         end
         
         [registre_maj.immatriculation, registre_maj.airline, registre_maj.categorie, registre_maj.pays] = adresse2immat(registre_maj.adresse);

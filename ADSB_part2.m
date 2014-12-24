@@ -90,6 +90,6 @@ for k = 1:size(trames_test,2)
         % finalement, on affiche les informations necessaires
         registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
         registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT, PLANE_ALT,'*b', 'MarkerSize', 8);
-        registres(i).plot3 = text(PLANE_LON+0.1,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
+        registres(i).plot3 = text(PLANE_LON+0.05,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
     end
 end
