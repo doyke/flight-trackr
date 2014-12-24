@@ -9,7 +9,7 @@ function [delta_t_hat, delta_f_hat] = estimation(y_l, s_p, T_e)
         interval = delta_t+1:delta_t+length(s_p);
         y_l_portion = y_l(interval);
         
-        for delta_f = -1E3:1E2:1E3
+        for delta_f = -1E3:1E1:1E3
             rho_num = sum(y_l_portion.*s_p.*exp(1i*2*pi*delta_f*T_e.*interval));
             rho_denum = norm(s_p)*norm(y_l_portion);
             rho_tmp = rho_num / rho_denum;
