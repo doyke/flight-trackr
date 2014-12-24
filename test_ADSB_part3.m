@@ -5,6 +5,8 @@ clc
 clear all
 close all
 
+javaaddpath('./sqlite-jdbc-3.8.7.jar');
+
 %% Constants definition
 PORT = 1234;
 MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
@@ -70,7 +72,13 @@ for k = 1:length(n)-1
     end
 
     r = downsample(r_l(f_se:N_bits*f_se), f_se);
-    trame = r < 0;
+    trame = r >= 0;
+
+    % on vérifie que DF = 17
+    DF = bin2dec(num2str(trame(1:5)));
+    if (DF ~= 17)
+        continue;
+    end
 
     detected = 0;
     trace = 0;
