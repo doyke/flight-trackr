@@ -132,7 +132,6 @@ for k = 1:length(n)-1
     detected = 0;
     trace = 0;
     adresse = decodage_adresse(trame);
-    
 
     % on regarde si on a déjà répertorié cet avion
     for i = 1:length(registres)

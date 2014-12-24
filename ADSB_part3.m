@@ -87,90 +87,105 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
     int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits Ã  1 entier 16 bits
     cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
     %% Code utilisateur
-    
-    % premiÃ¨re estimation grossiÃ¨re de l'offset
-    offset1 = real(mean(cplxBuffer));
-    y = cplxBuffer - offset1;
-    
-    [delta_t_hat, delta_f_hat] = estimation(y, s_p, T_e);
-    
-    % synchronisation
-    y_l_desync = y(length(s_p)+delta_t_hat+1:end).*exp(1i*2*pi*delta_f_hat.*(1:length(y)-length(s_p)-delta_t_hat));
-    
-    % estimation de l'offset restant
-    offset2 = mean(abs(s_p))-mean(abs(y_l_desync(1:length(s_p))));
-    
-    y_l_unoffset = y_l_desync - offset2;
-    
-    r_l = conv(y_l_unoffset, p);
-    
-    if (length(r_l) < N_bits * f_se)
-        r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
-    end
+    absBuffer = abs(cplxBuffer);
+    longueur_trame = length(s_p) + N_bits * f_se;
+    n = 0:longueur_trame:length(absBuffer) - longueur_trame - 100;
 
-    r = downsample(r_l(f_se:N_bits*f_se), f_se);
-    trame = r < 0;
-    
-    detected = 0;
-    trace = 0;
-    adresse = decodage_adresse(trame);
-    
-    % on regarde si on a dÃ©jÃ  rÃ©pertoriÃ© cet avion
-    for i = 1:length(registres)
-        if strcmp(registres(i).adresse, adresse)
-            detected = 1;
-            registres(i) = bit2registre(trame, registres(i));
-            break;
-        end
-    end
-    
-    % sinon on crÃ©e un nouveau registre
-    if ~detected
-        registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
-                          'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
-                          'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
-        registre = bit2registre(trame, registre);
-        
-        % si pas d'erreur CRC, on l'ajoute dans le repertoire des registres
-        if (~isempty(registre.adresse))
-            registres = [registres, registre];
-            i = length(registres);
-        else
-            % sinon on a eu une erreur CRC, on passe Ã  la suite
+    for k = 1:length(n)-1
+
+        Buffer = absBuffer(n(k)+1:n(k+1)+100);
+
+        [delta_t_hat, rho] = estimation_sous_optimale(Buffer, s_p);
+
+        % on s'évite des calculs
+        if (rho < 0.7)
             continue;
         end
-    end
-    
-    if (~isempty(registres) && ~isempty(registres(i).trajectoire))
-        % si le registre a une trajectoire, on la (re)trace
-        longitudes = registres(i).trajectoire(1,:);
-        latitudes = registres(i).trajectoire(2,:);
-        altitudes = registres(i).trajectoire(3,:);
-        
-        PLANE_LON = longitudes(end);    % Longitude de l'avion
-        PLANE_LAT = latitudes(end);     % Latitude de l'avion
-        PLANE_ALT = altitudes(end);
-        
-        if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-            % on enlÃ¨ve ce qui a d?j? ?t? trac?
-            delete(registres(i).plot1);
-            delete(registres(i).plot2);
-            delete(registres(i).plot3);
-        end
-        
-        % si l'avion n'a pas d'immatriculation, on affiche son adresse
-        if (~isempty(registres) && ~isempty(registres(i).immatriculation))
-            Id_airplane = registres(i).immatriculation;
-        else
-            Id_airplane = registres(i).adresse;
+
+        % synchronisation
+        y_l_desync = Buffer(length(s_p)+delta_t_hat+1:length(s_p)+delta_t_hat+N_bits*f_se);
+
+        % offset
+        y_l_unoffset = (y_l_desync + median(findpeaks(-y_l_desync)));
+        y_l_unoffset = y_l_unoffset / median(findpeaks(y_l_unoffset));
+
+        r_l = conv(y_l_unoffset, p);
+
+        if (length(r_l) < N_bits * f_se)
+            r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
         end
 
-        points = fnplt(cscvn([longitudes;latitudes;altitudes]));
-        
-        % finalement, on affiche les informations n?cessaires
-        registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
-        registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT,PLANE_ALT,'*b', 'MarkerSize', 8);
-        registres(i).plot3 = text(PLANE_LON+0.05,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
+        r = downsample(r_l(f_se:N_bits*f_se), f_se);
+        trame = r >= 0;
+
+        % on vérifie que DF = 17
+        DF = bin2dec(num2str(trame(1:5)));
+        if (DF ~= 17)
+            continue;
+        end
+
+        detected = 0;
+        trace = 0;
+        adresse = decodage_adresse(trame);
+
+        % on regarde si on a déjà répertorié cet avion
+        for i = 1:length(registres)
+            if strcmp(registres(i).adresse, adresse)
+                detected = 1;
+                registres(i) = bit2registre(trame, registres(i));
+                break;
+            end
+        end
+
+        % sinon on crée un nouveau registre
+        if ~detected
+            registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
+                              'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
+                              'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
+            registre = bit2registre(trame, registre);
+
+            % si pas d'erreur CRC, on l'ajoute dans le repertoire des registres
+            if (~isempty(registre.adresse))
+                registres = [registres, registre];
+                i = length(registres);
+            else
+                % sinon on a eu une erreur CRC, on passe à la suite
+                continue;
+            end
+        end
+
+        if (~isempty(registres) && ~isempty(registres(i).trajectoire))
+            % si le registre a une trajectoire, on la (re)trace
+            longitudes = registres(i).trajectoire(1,:);
+            latitudes = registres(i).trajectoire(2,:);
+            altitudes = registres(i).trajectoire(3,:);
+
+            PLANE_LON = longitudes(end);    % Longitude de l'avion
+            PLANE_LAT = latitudes(end);     % Latitude de l'avion
+            PLANE_ALT = altitudes(end);
+
+            if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
+                % on enlève ce qui a d?j? ?t? trac?
+                delete(registres(i).plot1);
+                delete(registres(i).plot2);
+                delete(registres(i).plot3);
+            end
+
+            % si l'avion n'a pas d'immatriculation, on affiche son adresse
+            if (~isempty(registres) && ~isempty(registres(i).immatriculation))
+                Id_airplane = registres(i).immatriculation;
+            else
+                Id_airplane = registres(i).adresse;
+            end
+
+            points = fnplt(cscvn([longitudes;latitudes;altitudes]));
+
+            % finalement, on affiche les informations n?cessaires
+            registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
+            registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT,PLANE_ALT,'*b', 'MarkerSize', 8);
+            registres(i).plot3 = text(PLANE_LON+0.05,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
+        end
+
     end
 end
 
