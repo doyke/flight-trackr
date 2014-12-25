@@ -1,4 +1,4 @@
-function [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur, subtype)
+function [vitesse_air, vitesse_sol, cap] = decodage_vitesse(vecteur, subtype)
     
     vitesse_sol = 0;
     vitesse_air = 0;
@@ -13,6 +13,7 @@ function [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur, subtype)
             vitesse_sol_NS = bin2dec(num2str(vecteur(58:67))) - 1;
 
             vitesse_sol = sqrt(vitesse_sol_EW^2 + vitesse_sol_NS^2);
+            
         else
             vitesse_sol = 'No info';
         end
@@ -26,7 +27,13 @@ function [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur, subtype)
         else
             vitesse_air = 'No info';
         end
-
+        
+        % cap
+        status = vecteur(46);
+        if (status == 1)
+            cap = bin2dec(num2str(vecteur(47:56)))*360/1024;
+        end
+        
     end
 
 end

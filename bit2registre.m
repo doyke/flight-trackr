@@ -34,7 +34,7 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
             % message de vitesse en vol
             subtype = bin2dec(num2str(vecteur(38:40)));
             
-            [registre_maj.vitesse_air, registre_maj.vitesse_sol] = decodage_vitesse(vecteur, subtype);
+            [registre_maj.vitesse_air, registre_maj.vitesse_sol, registre_maj.cap] = decodage_vitesse(vecteur, subtype);
             
             % taux de montée/descente
             % seulement si info sur le taux
