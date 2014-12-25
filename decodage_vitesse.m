@@ -1,7 +1,7 @@
 function [vitesse_air, vitesse_sol, cap] = decodage_vitesse(vecteur, subtype)
     
-    vitesse_sol = 0;
-    vitesse_air = 0;
+    vitesse_sol = [];
+    vitesse_air = [];
     cap = [];
     
     % vitesse sol (vitesse air + prise en compte du vent)

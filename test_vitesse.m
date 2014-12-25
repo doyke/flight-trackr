@@ -14,7 +14,7 @@ signe_taux = 0;
 taux = [0 0 0 0 0 0 0 1 0];
 
 %% vitesse air
-vitesse_bin = [0 0 0 0 0 0 0 0 0 0];
+vitesse_bin = [0 0 0 0 0 1 0 0 0 0];
 vecteur_vitesse_air_test = [zeros(1,45) status heading 0 vitesse_bin 0 signe_taux taux];
 
 %% vitesse sol
