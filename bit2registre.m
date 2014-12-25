@@ -13,6 +13,8 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
         registre_maj.adresse = decodage_adresse(vecteur);
         
         % si l'adresse n'est pas sur 24 bits
+        % inutile apres l'update de decodage_adresse
+        % precision de 2 hexa
         if (length(registre_maj.adresse) ~= 6)
             registre_maj.adresse = 'Unidentified';
         end
