@@ -7,7 +7,7 @@ subtype_sol = 1;
 
 %% heading
 status = 1;
-heading = [1 0 0 0 0 0 0 0 0 0];
+heading = [1 0 0 0 1 0 0 0 0 0];
 
 %% taux de montee/descente
 signe_taux = 0;
@@ -18,11 +18,14 @@ vitesse_bin = [0 0 0 0 0 0 0 0 0 0];
 vecteur_vitesse_air_test = [zeros(1,45) status heading 0 vitesse_bin 0 signe_taux taux];
 
 %% vitesse sol
-vitesse_EW_bin = [0 0 1 0 0 0 0 0 0 0];
-vitesse_NS_bin = [0 0 0 0 0 0 0 0 0 0];
-vecteur_vitesse_sol_test = [zeros(1,46) vitesse_EW_bin 0 vitesse_NS_bin 0 signe_taux taux];
+vitesse_EW_bin = [0 0 1 0 0 0 0 0 0 1];
+vitesse_NS_bin = [0 0 0 1 0 0 0 0 0 1];
+EW = 0;% E = 0, W = 1
+NS = 1;% N = 0, S = 1
 
-[vitesse_air, vitesse_sol, heading] = decodage_vitesse(vecteur_vitesse_air_test, subtype_air);
+vecteur_vitesse_sol_test = [zeros(1,45) EW vitesse_EW_bin NS vitesse_NS_bin 0 signe_taux taux];
+
+[vitesse_air, vitesse_sol, cap] = decodage_vitesse(vecteur_vitesse_air_test, subtype_air);
 
 %% test taux
 if (bin2dec(num2str(vecteur_vitesse_air_test(70:78))))
