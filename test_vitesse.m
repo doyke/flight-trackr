@@ -4,16 +4,24 @@ clc
 
 subtype_air = 3;
 subtype_sol = 1;
-vitesse = 350;
-%vitesse_bin = [0 1 0 1 0 1 1 1 1 0];
+
+signe_taux = 0;
+taux = [0 0 0 0 0 0 0 1 0];
+
 vitesse_bin = [0 0 0 0 0 0 0 0 0 0];
-vecteur_vitesse_air_test = [zeros(1,57) vitesse_bin];
+vecteur_vitesse_air_test = [zeros(1,57) vitesse_bin 0 signe_taux taux];
 
-vitesse_EW = 50;
-vitesse_NS = 340;
-vitesse_EW_bin = [0 0 0 0 0 0 0 0 0 1];
-vitesse_NS_bin = [0 1 0 1 0 1 0 1 0 0];
-
-vecteur_vitesse_sol_test = [zeros(1,46) vitesse_EW_bin 0 vitesse_NS_bin];
+vitesse_EW_bin = [0 0 1 0 0 0 0 0 0 0];
+vitesse_NS_bin = [0 0 0 0 0 0 0 0 0 0];
+vecteur_vitesse_sol_test = [zeros(1,46) vitesse_EW_bin 0 vitesse_NS_bin 0 signe_taux taux];
 
 [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur_vitesse_sol_test, subtype_sol);
+
+if (bin2dec(num2str(vecteur_vitesse_air_test(70:78))))
+    taux = bin2dec(num2str(vecteur_vitesse_air_test(70:78))) * 64 - 64;
+    
+    signe = vecteur_vitesse_air_test(69);
+    if (signe == 1)
+        taux = -taux;
+    end
+end

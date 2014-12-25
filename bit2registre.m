@@ -38,7 +38,7 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
             
             % taux de montée/descente
             % seulement si info sur le taux
-            if (~bin2dec(num2str(vecteur(70:78))))
+            if (bin2dec(num2str(vecteur(70:78))))
                 taux = bin2dec(num2str(vecteur(70:78))) * 64 - 64;
                     
                 signe = vecteur(69);
@@ -47,6 +47,8 @@ function [registre_maj, erreur] = bit2registre(vecteur, registre)
                 end
                     
                 registre_maj.taux = taux;
+            else
+                registre_maj.taux = 'No info';
             end
             
         elseif (FTC > 4 && FTC < 9)
