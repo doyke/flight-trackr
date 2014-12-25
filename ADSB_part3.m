@@ -16,7 +16,7 @@ PORT = 1234;
 MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
 MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
 
-%% ParamÃ¨tres Utilisateur
+%% ParamÃƒÂ¨tres Utilisateur
 Fc = 1090e6; % La fr?quence porteuse
 Rs = 4e6; % Le rythme d'?chantillonnage (pas plus de 4Mhz)
 T_e = 1/Rs;
@@ -36,6 +36,7 @@ cplxSamplesInBuffer = secInBuffer*Rs; % dur?e en secondes
 Ts = 1/Rb;
 s_p = [1 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0];                % s_p au rythme 0.5?s
 s_p = upsample(s_p, Ts/(0.5E-6));
+longueur_trame = length(s_p) + N_bits * f_se;
 
 p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
 p = p / norm(p);
@@ -64,9 +65,9 @@ disp(['python2.7 uhd_adsb_tcp_client.py -s ',num2str(Rs), ' -f ', num2str(Fc), '
 disp('----------------------------------------------------------------------------------------------------------------------')
 disp('En attente de connexion client...')
 socket = my_server.accept; % attente de connexion client
-disp('Connexion accept?e')
+disp('Connexion acceptee')
 
-% Le n?cessaire pour aller lire les paquets re?us par tcp
+% Le n?cessaire pour aller lire les paquets recus par tcp
 my_input_stream = socket.getInputStream;
 my_data_input_stream = DataInputStream(my_input_stream);
 data_reader = DataReader(my_data_input_stream);
@@ -78,17 +79,16 @@ while ~(my_input_stream.available)
 end
 
 % Lorsque le buffer est non-vide on commence le traitement
-disp('R?ception...')
+disp('Reception...')
 
 %% Boucle principale
-while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
+while my_input_stream.available % tant qu'on recoit quelque chose on boucle
     disp('new buffer')
-    int8Buffer = data_reader.readBuffer(cplxSamplesInBuffer*4)'; % Un complexe est cod? sur 2 entiers 16 bits soit 4 octets et readBuffer lit des octets.
-    int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits Ã  1 entier 16 bits
-    cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
+    int8Buffer = data_reader.readBuffer(cplxSamplesInBuffer*4)'; % Un complexe est code sur 2 entiers 16 bits soit 4 octets et readBuffer lit des octets.
+    int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits ÃƒÂ  1 entier 16 bits
+    cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelacees, on desentrelace pour avoir le buffer complexe.
     %% Code utilisateur
     absBuffer = abs(cplxBuffer);
-    longueur_trame = length(s_p) + N_bits * f_se;
     n = 0:longueur_trame:length(absBuffer) - longueur_trame - 100;
 
     for k = 1:length(n)-1
@@ -97,7 +97,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
 
         [delta_t_hat, rho] = estimation_sous_optimale(Buffer, s_p);
 
-        % on s'évite des calculs
+        % on s'evite des calculs
         if (rho < 0.7)
             continue;
         end
@@ -118,7 +118,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
         r = downsample(r_l(f_se:N_bits*f_se), f_se);
         trame = r >= 0;
 
-        % on vérifie que DF = 17
+        % on verifie que DF = 17
         DF = bin2dec(num2str(trame(1:5)));
         if (DF ~= 17)
             continue;
@@ -128,7 +128,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
         trace = 0;
         adresse = decodage_adresse(trame);
 
-        % on regarde si on a déjà répertorié cet avion
+        % on regarde si on a deja repertorie cet avion
         for i = 1:length(registres)
             if strcmp(registres(i).adresse, adresse)
                 detected = 1;
@@ -137,7 +137,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
             end
         end
 
-        % sinon on crée un nouveau registre
+        % sinon on cree un nouveau registre
         if ~detected
             registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], ...
                               'type', [], 'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'timeFlag', [], ...
@@ -149,7 +149,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
                 registres = [registres, registre];
                 i = length(registres);
             else
-                % sinon on a eu une erreur CRC, on passe à la suite
+                % sinon on a eu une erreur CRC, on passe Ã  la suite
                 continue;
             end
         end
@@ -165,7 +165,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
             PLANE_ALT = altitudes(end);
 
             if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-                % on enlève ce qui a d?j? ?t? trac?
+                % on enleve ce qui a deja ete trace
                 delete(registres(i).plot1);
                 delete(registres(i).plot2);
                 delete(registres(i).plot3);
@@ -180,7 +180,7 @@ while my_input_stream.available % tant qu'on re?oit quelque chose on boucle
 
             points = fnplt(cscvn([longitudes;latitudes;altitudes]));
 
-            % finalement, on affiche les informations n?cessaires
+            % finalement, on affiche les informations necessaires
             registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
             registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT,PLANE_ALT,'*b', 'MarkerSize', 8);
             registres(i).plot3 = text(PLANE_LON+0.05,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
