@@ -8,7 +8,7 @@ function [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur, subtype)
     
         % vitesse est-ouest et nord-sud
         % seulement si info sur la vitesse
-        if (~bin2dec(num2str(vecteur(47:56))) && bin2dec(num2str(vecteur(58:67))))
+        if (bin2dec(num2str(vecteur(47:56))) || bin2dec(num2str(vecteur(58:67))))
             vitesse_sol_EW = bin2dec(num2str(vecteur(47:56))) - 1;
             vitesse_sol_NS = bin2dec(num2str(vecteur(58:67))) - 1;
 
@@ -19,8 +19,10 @@ function [vitesse_air, vitesse_sol] = decodage_vitesse(vecteur, subtype)
     elseif (subtype == 3 || subtype == 4)
         % vitesse
         % seulement si info sur la vitesse
-        if (~bin2dec(num2str(vecteur(58:67))))
+        if (bin2dec(num2str(vecteur(58:67))))
             vitesse_air = bin2dec(num2str(vecteur(58:67))) - 1;
+        else
+            vitesse_air = 'No info';
         end
 
     end

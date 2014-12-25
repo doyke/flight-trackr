@@ -5,6 +5,8 @@ clc
 clear all
 close all
 
+javaaddpath('./sqlite-jdbc-3.8.7.jar');
+
 %% Constants definition
 PORT = 1234;
 MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
