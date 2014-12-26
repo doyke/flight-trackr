@@ -19,7 +19,7 @@ function [vitesse_air, vitesse_sol, cap] = decodage_vitesse(vecteur, subtype)
             direction_EW = vecteur(46);
             direction_NS = vecteur(57);
             if (vitesse_sol ~= 0)
-                angle = asin(vitesse_sol_NS/vitesse_sol)*180/pi;
+                angle = atan(vitesse_sol_NS/vitesse_sol_EW)*180/pi;
 
                 if ((direction_EW == 0) && (direction_NS == 0)) % Cadran NE
                     cap = 90 - angle;
