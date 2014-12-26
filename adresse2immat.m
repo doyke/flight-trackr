@@ -13,8 +13,7 @@ function [immat, airline, category, country] = adresse2immat(adresse)
     curs = fetch(curs);
     cursData = curs.Data;
     
-    % Si l'avion n'est pas dans la bdd, on l'ajoute avec les infos de
-    % flightradar24
+    % Ajout complémentaire des infos via flightradar24
     if (strcmp(cursData, 'No Data'))
         
         country = [];
@@ -26,7 +25,7 @@ function [immat, airline, category, country] = adresse2immat(adresse)
 
         end
     
-    % pour un avion dÃ©jÃ  dans la bdd mais sans airline
+    % pour un avion déjà  dans la bdd mais sans airline
     % update aussi la categorie
     else
         

@@ -116,76 +116,10 @@ while my_input_stream.available % tant qu'on recoit quelque chose on boucle
         end
 
         r = downsample(r_l(f_se:N_bits*f_se), f_se);
+        
         trame = r >= 0;
-
-        % on verifie que DF = 17
-        DF = bin2dec(num2str(trame(1:5)));
-        if (DF ~= 17)
-            continue;
-        end
-
-        detected = 0;
-        trace = 0;
-        adresse = decodage_adresse(trame);
-
-        % on regarde si on a deja repertorie cet avion
-        for i = 1:length(registres)
-            if strcmp(registres(i).adresse, adresse)
-                detected = 1;
-                registres(i) = bit2registre(trame, registres(i));
-                break;
-            end
-        end
-
-        % sinon on cree un nouveau registre
-        if ~detected
-            registre = struct('immatriculation', [], 'adresse', [], 'airline', [], 'categorie', [], 'pays', [], 'format', [], 'type', [], ...
-                              'nom', [], 'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'taux', [], 'cap', [], 'timeFlag', [], ...
-                              'cprFlag', [], 'latitude', [], 'longitude', [], 'trajectoire', [], 'plot1', [], 'plot2', [], 'plot3', []);
-            registre = bit2registre(trame, registre);
-
-            % si pas d'erreur CRC, on l'ajoute dans le repertoire des registres
-            if (~isempty(registre.adresse))
-                registres = [registres, registre];
-                i = length(registres);
-            else
-                % sinon on a eu une erreur CRC, on passe à la suite
-                continue;
-            end
-        end
-
-        if (~isempty(registres) && ~isempty(registres(i).trajectoire))
-            % si le registre a une trajectoire, on la (re)trace
-            longitudes = registres(i).trajectoire(1,:);
-            latitudes = registres(i).trajectoire(2,:);
-            altitudes = registres(i).trajectoire(3,:);
-
-            PLANE_LON = longitudes(end);    % Longitude de l'avion
-            PLANE_LAT = latitudes(end);     % Latitude de l'avion
-            PLANE_ALT = altitudes(end);
-
-            if (~isempty(registres(i).plot1) && ~isempty(registres(i).plot2) && ~isempty(registres(i).plot3))
-                % on enleve ce qui a deja ete trace
-                delete(registres(i).plot1);
-                delete(registres(i).plot2);
-                delete(registres(i).plot3);
-            end
-
-            % si l'avion n'a pas d'immatriculation, on affiche son adresse
-            if (~isempty(registres) && ~isempty(registres(i).immatriculation))
-                Id_airplane = registres(i).immatriculation;
-            else
-                Id_airplane = registres(i).adresse;
-            end
-
-            points = fnplt(cscvn([longitudes;latitudes;altitudes]));
-
-            % finalement, on affiche les informations necessaires
-            registres(i).plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
-            registres(i).plot2 = plot3(PLANE_LON,PLANE_LAT,PLANE_ALT,'*b', 'MarkerSize', 8);
-            registres(i).plot3 = text(PLANE_LON+0.05,PLANE_LAT, PLANE_ALT, Id_airplane,'color','b');
-        end
-
+        
+        registres = update_registres(registres, trame, MER_LON, MER_LAT);
     end
 end
 

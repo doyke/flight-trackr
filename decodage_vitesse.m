@@ -59,4 +59,3 @@ function [vitesse_air, vitesse_sol, cap] = decodage_vitesse(vecteur, subtype)
     end
 
 end
-
