@@ -15,7 +15,8 @@ MER_LAT = 44.836316; % Latitude de l'aeroport de Merignac
 figure(1);
 plot(MER_LON,MER_LAT,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
 text(MER_LON+0.05,MER_LAT,'Merignac airport','color','r')
-plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
+%plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
+plot_osm_map()
 
 xlabel('Longitude en degre');
 ylabel('Latitude en degre');
