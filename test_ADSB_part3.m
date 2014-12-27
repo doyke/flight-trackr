@@ -1,10 +1,8 @@
 %% ADSB Project
-
 %% Initialization
 clc
 clear all
 close all
-
 % JAVA init
 import java.net.*;
 import java.io.*;
@@ -34,8 +32,7 @@ f_se = NsB;
 cplxSamplesInBuffer = secInBuffer*Rs; % dur?e en secondes
 
 Ts = 1/Rb;
-s_p = [1 1 0 0 1 1 0 0 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0]; % s_p au rythme 0.5?s
-s_p = upsample(s_p, Ts/(1E-6));
+s_p = [1 1 0 0 1 1 zeros(1,8) 1 1 0 0 1 1 zeros(1,12)];
 
 p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
 p = p / norm(p);
@@ -43,10 +40,10 @@ registres = [];
 
 %% Affichage de la carte avant de commencer
 disp('Chargement de la carte ...')
-figure(1);
-plot(MER_LON,MER_LAT,'.r','MarkerSize',20);
-text(MER_LON+0.05,MER_LAT,'Merignac airport','color','b') % On affiche l'a?roport de M?rignac sur la carte
-plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
+figure(1)
+plot(MER_LON,MER_LAT,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
+text(MER_LON+0.05,MER_LAT,'Merignac airport','color','r')
+plot_osm_map() % On affiche une carte sans le nom des villes
 xlabel('Longitude en degre');
 ylabel('Latitude en degre');
 hold on
@@ -87,28 +84,27 @@ drawnow
 %     cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelac?es, on d?sentrelace pour avoir le buffer complexe.
     
 %% Code utilisateur
+tic
 abs_cplxBuffer = load('abs_cplxBuffer.mat');
 real_cplxBuffer = load('real_cplxBuffer.mat');
 
 absBuffer = abs_cplxBuffer.abs_cplxBuffer;
 realBuffer = real_cplxBuffer.real_cplxBuffer;
+n_trame = length(s_p) + N_bits * f_se;
+offset = 0;
 
-longueur_trame = length(s_p) + N_bits * f_se;
-n = 0:longueur_trame:length(absBuffer) - longueur_trame - 100;
+while (1)
 
-for k = 1:length(n)-1
-
-    Buffer = absBuffer(n(k)+1:n(k+1)+100);
-
-    [delta_t_hat, rho] = estimation_sous_optimale(Buffer, s_p);
-
-    % on s'évite des calculs
-    if (rho < 0.7)
-        continue;
+    buffer = absBuffer(offset+1:end);
+    
+    [dt_hat, offset] = estimation_sous_optimale2(buffer, offset, s_p, n_trame);
+    
+    if dt_hat < 0j
+        break;
     end
-
+    
     % synchronisation
-    y_l_desync = Buffer(length(s_p)+delta_t_hat+1:length(s_p)+delta_t_hat+N_bits*f_se);
+    y_l_desync = buffer(length(s_p)+dt_hat+1:n_trame+dt_hat);
 
     % offset
     y_l_unoffset = (y_l_desync + median(findpeaks(-y_l_desync)));
@@ -126,8 +122,8 @@ for k = 1:length(n)-1
     registres = update_registres(registres, trame, MER_LON, MER_LAT);
     
 end
+toc
 %end
-
 %% fermeture des flux
 % socket.close;
 % my_input_stream.close;

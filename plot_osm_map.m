@@ -63,6 +63,7 @@ function varargout = plot_osm_map(varargin)
 % Author:
 %  Zohar Bar-Yehuda
 %  Charlie Huynh
+%  Benjamin Fovet
 
 persistent apiKey
 if isnumeric(apiKey)
@@ -77,43 +78,26 @@ hold on
 
 % Default parametrs
 axHandle = gca;
-height = 640;
-width = 640;
+height = 1280;
+width = 1280;
 scale = 1;
 alphaData = 1;
-autoRefresh = 1;
 figureResizeUpdate = 1;
 autoAxis = 1;
-markeridx = 1;
-markerlist = {};
+marker = '';
 
 % Handle input arguments
 if nargin >= 2
     for idx = 1:2:length(varargin)
         switch lower(varargin{idx})
-            case 'height'
-                height = varargin{idx+1};
-            case 'width'
-                width = varargin{idx+1};
-            case 'alpha'
-                alphaData = varargin{idx+1};
-            case 'refresh'
-                autoRefresh = varargin{idx+1};
-            case 'marker'
-                markerlist{markeridx} = varargin{idx+1};
-                markeridx = markeridx + 1;
             case 'axis'
                 axHandle = varargin{idx+1};
+            case 'marker'
+                marker = [varargin{idx+1} '/'];
             otherwise
                 error(['Unrecognized variable: ' varargin{idx}])
         end
     end
-end
-if height > 640
-    height = 640;
-end
-if width > 640
-    width = 640;
 end
 
 % Store paramters in axis handle (for auto refresh callbacks)
@@ -227,8 +211,7 @@ end
 minResX = diff(xExtent) / width;
 minResY = diff(yExtent) / height;
 minRes = max([minResX minResY]);
-tileSize = 256;
-initialResolution = 2 * pi * 6378137 / tileSize; % 156543.03392804062 for tileSize 256 pixels
+initialResolution = 156543.033928041;
 zoomlevel = floor(log2(initialResolution/minRes));
 
 % Enforce valid zoom levels
@@ -245,8 +228,7 @@ lon = (curAxis(1)+curAxis(2))/2;
 
 % Construct query URL
 preamble = 'http://api.tiles.mapbox.com/v4/';
-%mapid = 'chuynh.kjh44e37/'; % terrain
-mapid = 'chuynh.kjhfi093/'; % radar
+mapid = 'chuynh.kjigeh07/';
 location = [num2str(lon,10) ',' num2str(lat,10)];
 zoomStr = [',' num2str(zoomlevel)];
 sizeStr = ['/' num2str(width) 'x' num2str(height)];
@@ -258,35 +240,24 @@ if ~isempty(apiKey)
 else
     keyStr = '';
 end
-markers = '';
-for idx = 1:length(markerlist)
-    if idx < length(markerlist)
-        markers = [markers markerlist{idx} '%7C'];
-    else
-        markers = [markers markerlist{idx}];
-    end
-end
     
-%filename = 'tmp.jpg';
-%format = '.jpg90';
-filename = 'tmp.png';
-format = '.png';
-convertNeeded = 1;
-url = [preamble mapid location zoomStr sizeStr format markers keyStr];
+filename = 'tmp.jpg';
+format = '.jpg90';
+url = [preamble mapid marker location zoomStr sizeStr format keyStr];
 % Get the image
 try
     urlwrite(url, filename);
 catch % error downloading map
-    warning(sprintf(['Unable to download map form Google Servers.\n' ...
+    sprintf(['Unable to download map form Google Servers.\n' ...
         'Possible reasons: no network connection, quota exceeded, or some other error.\n' ...
         'Consider using an API key if quota problems persist.\n\n' ...
-        'To debug, try pasting the following URL in your browser, which may result in a more informative error:\n%s'], url));
+        'To debug, try pasting the following URL in your browser, which may result in a more informative error:\n%s'], url);
     varargout{1} = [];
     varargout{2} = [];
     varargout{3} = [];
     return
 end
-[M Mcolor] = imread(filename);
+M = imread(filename);
 M = cast(M,'double');
 delete(filename); % delete temp file
 width = size(M,2);
@@ -304,22 +275,14 @@ yVec = centerY + ((height:-1:1)-centerPixelY) * curResolution; % y vector
 % convert meshgrid to WGS1984
 [lonMesh,latMesh] = metersToLatLon(xMesh,yMesh);
 
-% We now want to convert the image from a colormap image with an uneven
-% mesh grid, into an RGB truecolor image with a uniform grid.
-% This would enable displaying it with IMAGE, instead of PCOLOR.
-% Advantages are:
-% 1) faster rendering
-% 2) makes it possible to display together with other colormap annotations (PCOLOR, SCATTER etc.)
-
-% Convert image from colormap type to RGB truecolor (if PNG is used)
-if convertNeeded
-    imag = zeros(height,width,3);
-    for idx = 1:3
-        imag(:,:,idx) = reshape(Mcolor(M(:)+1+(idx-1)*size(Mcolor,1)),height,width);
-    end
-else
-    imag = M/255;
-end
+imag = M/255;
+sizeFactor = 1;
+uniHeight = round(height*sizeFactor);
+uniWidth = round(width*sizeFactor);
+latVect = linspace(latMesh(1,1),latMesh(end,1),uniHeight);
+lonVect = linspace(lonMesh(1,1),lonMesh(1,end),uniWidth);
+[uniLonMesh,uniLatMesh] = meshgrid(lonVect,latVect);
+uniImag =  myTurboInterp2(lonMesh,latMesh,imag,uniLonMesh,uniLatMesh);
 
 % Next, project the data into a uniform WGS1984 grid
 sizeFactor = 1; % factoring of new image
@@ -327,34 +290,18 @@ uniHeight = round(height*sizeFactor);
 uniWidth = round(width*sizeFactor);
 latVect = linspace(latMesh(1,1),latMesh(end,1),uniHeight);
 lonVect = linspace(lonMesh(1,1),lonMesh(1,end),uniWidth);
-[uniLonMesh,uniLatMesh] = meshgrid(lonVect,latVect);
-uniImag = zeros(uniHeight,uniWidth,3);
-
-% old version (projection using INTERP2)
-% for idx = 1:3
-%      % 'nearest' method is the fastest. difference from other methods is neglible
-%          uniImag(:,:,idx) =  interp2(lonMesh,latMesh,imag(:,:,idx),uniLonMesh,uniLatMesh,'nearest');
-% end
-uniImag =  myTurboInterp2(lonMesh,latMesh,imag,uniLonMesh,uniLatMesh);
 
 if nargout <= 1 % plot map
     % display image
     hold(axHandle, 'on');
-    h = image(lonVect,latVect,uniImag, 'Parent', axHandle);
+    h = image(lonVect,latVect, uniImag, 'Parent', axHandle);
     set(axHandle,'YDir','Normal')
     set(h,'tag','gmap')
-    set(h,'AlphaData',alphaData)
+    set(h,'AlphaData', alphaData)
     
     % add a dummy image to allow pan/zoom out to x2 of the image extent
     h_tmp = image(lonVect([1 end]),latVect([1 end]),zeros(2),'Visible','off', 'Parent', axHandle);
     set(h_tmp,'tag','gmap')
-    
-    % older version (display without conversion to uniform grid)
-    % h =pcolor(lonMesh,latMesh,(M));
-    % colormap(Mcolor)
-    % caxis([0 255])
-    % warning off % to avoid strange rendering warnings
-    % shading flat
    
     uistack(h,'bottom') % move map to bottom (so it doesn't hide previously drawn annotations)
     axis(axHandle, curAxis) % restore original zoom
@@ -372,13 +319,9 @@ if nargout <= 1 % plot map
     
     zoomHandle = zoom(axHandle);   
     panHandle = pan(figHandle); % This isn't ideal, doesn't work for contained axis    
-    if autoRefresh        
-        set(zoomHandle,'ActionPostCallback',@update_osm_map);          
-        set(panHandle, 'ActionPostCallback', @update_osm_map);        
-    else % disable zoom override
-        set(zoomHandle,'ActionPostCallback',[]);
-        set(panHandle, 'ActionPostCallback',[]);
-    end
+   
+    set(zoomHandle,'ActionPostCallback',@update_osm_map);
+    set(panHandle, 'ActionPostCallback', @update_osm_map);
     
     % set callback for figure resize function, to update extents if figure
     % is streched.
@@ -394,25 +337,9 @@ else % don't plot, only return map
     varargout{2} = latVect;
     varargout{3} = uniImag;
 end
-
+end
 
 % Coordinate transformation functions
-
-function [lon,lat] = metersToLatLon(x,y)
-% Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum
-originShift = 2 * pi * 6378137 / 2.0; % 20037508.342789244
-lon = (x ./ originShift) * 180;
-lat = (y ./ originShift) * 180;
-lat = 180 / pi * (2 * atan( exp( lat * pi / 180)) - pi / 2);
-
-function [x,y] = latLonToMeters(lat, lon )
-% Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913"
-originShift = 2 * pi * 6378137 / 2.0; % 20037508.342789244
-x = lon * originShift / 180;
-y = log(tan((90 + lat) * pi / 360 )) / (pi / 180);
-y = y * originShift / 180;
-
-
 function ZI = myTurboInterp2(X,Y,Z,XI,YI)
 % An extremely fast nearest neighbour 2D interpolation, assuming both input
 % and output grids consist only of squares, meaning:
@@ -458,7 +385,23 @@ for idx = 1:length(yiPos)
     end
 end
 ZI = Z(yiPos,xiPos,:);
+end
 
+function [lon,lat] = metersToLatLon(x,y)
+% Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum
+originShift = 20037508.342789244;
+lon = (x ./ originShift) * 180;
+lat = (y ./ originShift) * 180;
+lat = 180 / pi * (2 * atan( exp( lat * pi / 180)) - pi / 2);
+end
+
+function [x,y] = latLonToMeters(lat, lon )
+% Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913"
+originShift = 20037508.342789244;
+x = lon * originShift / 180;
+y = log(tan((90 + lat) * pi / 360 )) / (pi / 180);
+y = y * originShift / 180;
+end
 
 function update_osm_map(obj,evd)
 % callback function for auto-refresh
@@ -473,6 +416,7 @@ ud = get(axHandle, 'UserData');
 if isfield(ud, 'gmap_params')
     params = ud.gmap_params;
     plot_osm_map(params{:});
+end
 end
 
 function update_osm_map_fig(obj,evd)
@@ -494,4 +438,5 @@ for idx = 1:length(axes_objs)
         end
         plot_osm_map(params{:});
     end
+end
 end

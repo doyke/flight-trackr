@@ -6,26 +6,28 @@ function [registre] = update_plots(registre)
         id = registre.adresse;
     end
 
-    longitudes = registre.trajectoire(1,:);
-    latitudes = registre.trajectoire(2,:);
-    altitudes = registre.trajectoire(3,:);
+    if (~isempty(registre.trajectoire))
+        longitudes = registre.trajectoire(1,:);
+        latitudes = registre.trajectoire(2,:);
+        altitudes = registre.trajectoire(3,:);
     
-    longitude = longitudes(end);    % Longitude de l'avion
-    latitude = latitudes(end);     % Latitude de l'avion
-    altitude = altitudes(end);
-    
-    if (~isempty(registre.plot1) && ~isempty(registre.plot2) && ~isempty(registre.plot3))
-        % on enlève ce qui a déjà été tracé
-        delete(registre.plot1);
-        delete(registre.plot2);
-        delete(registre.plot3);
+        longitude = longitudes(end);    % Longitude de l'avion
+        latitude = latitudes(end);     % Latitude de l'avion
+        altitude = altitudes(end);
+
+        if (~isempty(registre.plot1) && ~isempty(registre.plot2) && ~isempty(registre.plot3))
+            % on enlève ce qui a déjà été tracé
+            delete(registre.plot1);
+            delete(registre.plot2);
+            delete(registre.plot3);
+        end
+
+        points = fnplt(cscvn([longitudes;latitudes;altitudes]));
+
+        registre.plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
+        registre.plot2 = plot3(longitude, latitude,  altitude,'.b', 'MarkerSize', 8);
+        registre.plot3 = text(longitude+0.05, latitude, altitude, id,'color','b');
     end
-    
-    points = fnplt(cscvn([longitudes;latitudes;altitudes]));
-    
-    registre.plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
-    registre.plot2 = plot3(longitude, latitude,  altitude,'*b', 'MarkerSize', 8);
-    registre.plot3 = text(longitude+0.05, latitude, altitude, id,'color','b');
 end
 
 function [x,y,sizeval,w,origint,p,tolred] = chckxywp(x,y,nmin,w,p,adjtol)
