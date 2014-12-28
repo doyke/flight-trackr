@@ -9,7 +9,7 @@ function [registres] = update_registres(registres, trame, lon_ref, lat_ref)
     
     % Recherche dans la base des registres
     if (~isempty(registres))
-        i = find(cellfun(@(x)strcmp(x, adresse),{registres.adresse}));
+        i = find(strcmp(extractfield(registres, 'adresse'), adresse));
         if (~isempty(i))
             registre = registres(i(1));
         end

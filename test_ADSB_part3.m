@@ -11,8 +11,10 @@ javaaddpath('./sqlite-jdbc-3.8.7.jar');
 
 %% Constants definition
 PORT = 1234;
-MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
+% LON_REF = -0.710648; % Longitude de l'a?roport de M?rignac
+% LAT_REF = 44.836316; % Latitude de l'a?roport de M?rignac
+LON_REF = 2.45;
+LAT_REF = 44.92;
 
 %% Paramètres Utilisateur
 Fc = 1090e6; % La fr?quence porteuse
@@ -41,8 +43,8 @@ registres = [];
 %% Affichage de la carte avant de commencer
 disp('Chargement de la carte ...')
 figure(1)
-plot(MER_LON,MER_LAT,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
-text(MER_LON+0.05,MER_LAT,'Merignac airport','color','r')
+plot(LON_REF,LAT_REF,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
+text(LON_REF+0.05,LAT_REF,'Position actuelle','color','r')
 plot_osm_map() % On affiche une carte sans le nom des villes
 xlabel('Longitude en degre');
 ylabel('Latitude en degre');
@@ -91,37 +93,12 @@ real_cplxBuffer = load('real_cplxBuffer.mat');
 absBuffer = abs_cplxBuffer.abs_cplxBuffer;
 realBuffer = real_cplxBuffer.real_cplxBuffer;
 n_trame = length(s_p) + N_bits * f_se;
-offset = 0;
 
-while (1)
+trames = decodage_buffer(absBuffer, s_p, p, n_trame, f_se, N_bits);
 
-    buffer = absBuffer(offset+1:end);
-    
-    [dt_hat, offset] = estimation_sous_optimale2(buffer, offset, s_p, n_trame);
-    
-    if dt_hat < 0j
-        break;
-    end
-    
-    % synchronisation
-    y_l_desync = buffer(length(s_p)+dt_hat+1:n_trame+dt_hat);
-
-    % offset
-    y_l_unoffset = (y_l_desync + median(findpeaks(-y_l_desync)));
-    y_l_unoffset = y_l_unoffset / median(findpeaks(y_l_unoffset));
-
-    r_l = conv(y_l_unoffset, p);
-
-    if (length(r_l) < N_bits * f_se)
-        r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
-    end
-
-    r = downsample(r_l(f_se:N_bits*f_se), f_se);
-    trame = r >= 0;
-
-    registres = update_registres(registres, trame, MER_LON, MER_LAT);
-    
-end
+for k = 1:size(trames,1)
+    registres = update_registres(registres, trames(k,:), LON_REF, LAT_REF);
+end 
 toc
 %end
 %% fermeture des flux
