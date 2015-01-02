@@ -6,7 +6,8 @@ javaaddpath('./sqlite-jdbc-3.8.7.jar');
 trames = load('trames_20141120.mat');
 trames_test = trames.trames_20141120;
 
-registres = [];     % repertoire des registres
+registres = [];
+plots = [];
 
 % La fonction plot_google_map affiche des longitudes/lattitudes en degre decimaux,
 MER_LON = -0.710648; % Longitude de l'aeroport de Merignac
@@ -19,12 +20,14 @@ plot_osm_map()
 
 xlabel('Longitude en degre');
 ylabel('Latitude en degre');
-
+tic
 hold on;
 %% Mise a jour des registres
-for k = 1:size(trames_test, 2)
-    
-    trame_test = transpose(trames_test(:,k));
-    registres = update_registres(registres, trame_test, MER_LON, MER_LAT);
-    
-end
+% for k = 1:size(trames_test, 2)
+%     
+%     trame_test = transpose(trames_test(:,k));
+%     registres = update_registres(registres, trame_test, MER_LON, MER_LAT);
+%     
+% end
+[registres, plots] = update_registres2(registres, plots, transpose(trames_test), MER_LON, MER_LAT);
+toc

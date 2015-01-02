@@ -118,7 +118,7 @@ hold on
 axHandle = gca;
 height = 640;
 width = 640;
-scale = 2;
+scale = 1;
 maptype = 'roadmap';
 alphaData = 1;
 autoRefresh = 1;
@@ -207,7 +207,6 @@ if isequal(curAxis,[0 1 0 1]) % probably an empty figure
     curAxis = [-200 200 -85 85];
     axis(curAxis)
 end
-
 
 if autoAxis
     % adjust current axis limit to avoid strectched maps
@@ -333,21 +332,20 @@ else
     languageStr = '';
 end
     
-if ismember(maptype,{'satellite','hybrid'})
+% if ismember(maptype,{'satellite','hybrid'})
     filename = 'tmp.jpg';
     format = '&format=jpg';
     convertNeeded = 0;
-else
-    filename = 'tmp.png';
-    format = '&format=png';
-    convertNeeded = 1;
-end
+% else
+%     filename = 'tmp.png';
+%     format = '&format=png';
+%     convertNeeded = 1;
+% end
 sensor = '&sensor=false';
 url = [preamble location zoomStr sizeStr maptypeStr format markers labelsStr languageStr sensor keyStr];
-
 % Get the image
 try
-    urlwrite(url,filename);
+    websave(filename, url);
 catch % error downloading map
     warning(sprintf(['Unable to download map form Google Servers.\n' ...
         'Possible reasons: no network connection, quota exceeded, or some other error.\n' ...

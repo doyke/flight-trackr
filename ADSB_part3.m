@@ -34,8 +34,8 @@ f_se = NsB;
 cplxSamplesInBuffer = secInBuffer*Rs; % dur?e en secondes
 
 Ts = 1/Rb;
-s_p = [1 1 0 0 1 1 0 0 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0]; % s_p au rythme 0.5?s
-s_p = upsample(s_p, Ts/(1E-6));
+s_p = [1 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0];                % s_p au rythme 0.5?s
+s_p = upsample(s_p, Ts/(0.5E-6));
 longueur_trame = length(s_p) + N_bits * f_se;
 
 p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;

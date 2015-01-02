@@ -1,67 +1,55 @@
-function [r, erreur] = bit2registre(vecteur, r, lon_ref, lat_ref)
-    h = crc.detector([ones(1,13), 0, 1, zeros(1,6), 1, 0, 0, 1]);
-    [~, erreur] = detect(h, transpose(vecteur));
+function r = bit2registre(vecteur, r, lon_ref, lat_ref)
 
-    if (erreur > 0)
-        return
-    else
-        
-        % Format
-        format = bin_dec(vecteur(1:5));
-        if (format ~= 17), erreur = 1; return; end
-        r.format = format;
-        
-        % Immatriculation, Compagnie aérienne, Catégorie, Pays
-        if (isempty(r.immatriculation) || isempty(r.airline) || isempty(r.categorie))
-            [r.immatriculation, r.airline, r.categorie, r.pays] = adresse2immat(r.adresse);
-        end
-        
-        % Type
-        type = bin_dec(vecteur(33:37));
-        r.type = type;
+    % Immatriculation, Compagnie aérienne, Catégorie, Pays
+    if (isempty(r.immatriculation) || isempty(r.airline) || isempty(r.categorie))
+        [r.immatriculation, r.airline, r.categorie, r.pays] = adresse2immat(r.adresse);
+    end
 
-        if (type > 0 && type < 5)
-            
-            % message d'identification : on identifie l'avion
-            r.nom = decodage_nom(vecteur);
-            
-        elseif (type == 19)
-            
-            % message de vitesse en vol
-            subtype = bin_dec(vecteur(38:40));
-            [r.vitesse_air, r.vitesse_sol, r.cap] = decodage_vitesse(vecteur, subtype);
-            
-            % taux de montée/descente
-            if (bin_dec(vecteur(70:78)))
-                taux = bin_dec(vecteur(70:78)) * 64 - 64;
-                signe = vecteur(69);
-                if (signe == 1)
-                    taux = -taux;
-                end
-                r.taux = taux;
+    % Type
+    type = bin_dec(vecteur(33:37));
+    r.type = type;
+
+    if (type > 0 && type < 5)
+
+        % message d'identification : on identifie l'avion
+        r.nom = decodage_nom(vecteur);
+
+    elseif (type == 19)
+
+        % message de vitesse en vol
+        subtype = bin_dec(vecteur(38:40));
+        [r.vitesse_air, r.vitesse_sol, r.cap] = decodage_vitesse(vecteur, subtype);
+
+        % taux de montée/descente
+        if (bin_dec(vecteur(70:78)))
+            taux = bin_dec(vecteur(70:78)) * 64 - 64;
+            signe = vecteur(69);
+            if (signe == 1)
+                taux = -taux;
             end
-            
-        elseif ((type > 4 && type < 9) || (type > 8 && type ~= 19 && type < 23))
-            
-            r.timeFlag = bin_dec(vecteur(53));
-            bit_CPR = vecteur(54);
-            r.cprFlag = bit_CPR;
-            [lat, lon] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
-            
-            if (type > 4 && type < 9)
-                % message de position au sol
-                alt = 0;
-            elseif (type > 8 && type ~= 19 && type < 23)
-                % message de position
-                alt = decodage_altitude(vecteur(41:52));
-            end
-            
-            r.trajectoire = [r.trajectoire, [lon; lat; alt * 0.3048]];
-            r.longitude = lon;
-            r.latitude = lat;
-            r.altitude = alt;
-            
+            r.taux = taux;
         end
+
+    elseif ((type > 4 && type < 9) || (type > 8 && type ~= 19 && type < 23))
+
+        r.timeFlag = bin_dec(vecteur(53));
+        bit_CPR = vecteur(54);
+        r.cprFlag = bit_CPR;
+        [lat, lon] = decodage_latitude_longitude(vecteur(55:71), vecteur(72:88), lat_ref, lon_ref, bit_CPR);
+
+        if (type > 4 && type < 9)
+            % message de position au sol
+            alt = 0;
+        elseif (type > 8 && type ~= 19 && type < 23)
+            % message de position
+            alt = decodage_altitude(vecteur(41:52));
+        end
+
+        r.trajectoire = [r.trajectoire, [lon; lat; alt * 0.3048]];
+        r.longitude = lon;
+        r.latitude = lat;
+        r.altitude = alt;
+
     end
 end
 
@@ -101,7 +89,6 @@ function [lat, lon] = decodage_latitude_longitude(r_lat, r_lon, lat_ref, lon_ref
     m = calcul2(lon_ref, D_lon_i, LON, N_b);
     lon = calcul3(D_lon_i, LON, m, N_b);
 end
-
 
 function mod = MOD(x,y)
     mod = x - y * floor(x/y);

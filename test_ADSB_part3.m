@@ -28,17 +28,14 @@ secInBuffer = 0.5; % dur?e du buffer en secondes
 
 %% Autres param?tres
 Rb = 1e6;% d?bit binaire
-N_bits = 112;
 NsB = floor(Rs/Rb); % nombre d'?chantillons par symbole
 f_se = NsB;
 cplxSamplesInBuffer = secInBuffer*Rs; % dur?e en secondes
 
 Ts = 1/Rb;
-s_p = [1 1 0 0 1 1 zeros(1,8) 1 1 0 0 1 1 zeros(1,12)];
 
-p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
-p = p / norm(p);
 registres = [];
+plots = [];
 
 %% Affichage de la carte avant de commencer
 disp('Chargement de la carte ...')
@@ -92,13 +89,13 @@ real_cplxBuffer = load('real_cplxBuffer.mat');
 
 absBuffer = abs_cplxBuffer.abs_cplxBuffer;
 realBuffer = real_cplxBuffer.real_cplxBuffer;
-n_trame = length(s_p) + N_bits * f_se;
 
-trames = decodage_buffer(absBuffer, s_p, p, n_trame, f_se, N_bits);
+% Décodage du signal en trames
+trames = unique(decodage_buffer(absBuffer, f_se), 'rows', 'stable');
 
-for k = 1:size(trames,1)
-    registres = update_registres(registres, trames(k,:), LON_REF, LAT_REF);
-end 
+% Décodage des trames
+[registres, plots] = update_registres2(registres, plots, trames, LON_REF, LAT_REF);
+% registres = update_registres(registres, trames, LON_REF, LAT_REF);
 toc
 %end
 %% fermeture des flux

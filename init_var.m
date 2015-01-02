@@ -1,0 +1,13 @@
+function [var] = init_var(i)
+    var = [];
+
+    if (i == 1)
+        var = struct('id', [], 'adresse', [], 'format', 17, 'type', [], 'nom', [], ...
+            'altitude', [], 'vitesse_air', [], 'vitesse_sol', [], 'cap', [], ...
+            'taux', [], 'timeFlag', [], 'cprFlag', [], 'latitude', [], ...
+            'longitude', []);
+    elseif (i == 2)
+        var = struct('adresse', [], 'immat', [], 'airline', [], 'category', [], ...
+            'country', [],'trajectoire', [], 'position', [], 'texte', []);
+    end
+end

@@ -9,7 +9,7 @@ f_se = T_s/T_e;
 N_fft = 512;                                    % nombre de points pour la FFT
 N_bits = 112;                                   % nombre de bits du message transmis
 f = ((0:N_fft-1)/N_fft - 0.5)*f_e;              % axe des fr?quences
-EbN0 = 0:10;
+EbN0 = 0:8;
 %% Question 14
 P_b = zeros(1,length(EbN0));
 
@@ -23,15 +23,16 @@ p = p / norm(p);
 
 s_p = [1 1 0 0 1 1 zeros(1,8) 1 1 0 0 1 1 zeros(1,12)];
 
-disp('Calcul du TEB pour Eb/N0 =  ');
-for i = 1:length(EbN0)
+disp('Calcul du TEB pour Eb/N0 =   ');
+%for i = 1:length(EbN0)
+for i = 7
     erreur = 0;
     iteration = 0;
     % Affichage du traitement en cours (parce que c'est un peu long)
     fprintf('\b\b\b %d\n', EbN0(i));
     
     % garantie de la valeur du TEB (erreur >= 100)
-    while erreur < 1E3
+    %while erreur < 1E2
         
         sigma_n_l = 1/(2*(10.^(EbN0(i)/10)));           % calcul de la variance du bruit en fonction du rapport SNR
         
@@ -54,7 +55,7 @@ for i = 1:length(EbN0)
 
         % r?ception
         y_l = s_l_sync + n_l;
-        [delta_t_hat, delta_f_hat] = estimation2(y_l, s_p, T_e);
+        [delta_t_hat, delta_f_hat] = estimation(y_l, s_p, T_e);
         
         % synchronisation
         y_l_desync = y_l(length(s_p)+delta_t_hat+1:end).*exp(1i*2*pi*delta_f.*(1:length(y_l)-length(s_p)-delta_t_hat));
@@ -71,7 +72,7 @@ for i = 1:length(EbN0)
         
         erreur = erreur + sum(b_k ~= b_k_hat);
         iteration = iteration + 1;
-    end
+    %end
     P_b(i) = erreur / (iteration * N_bits);
 end
 
@@ -87,6 +88,6 @@ hold on
 semilogy(EbN0, TEB_th,'r');
 hold off
 title('Evolution du TEB');
-legend('TEB pratique','TEB théorique');
+legend('TEB pratique','TEB th?orique');
 xlabel('(E_b/N_0)_{dB}');
 ylabel('TEB');

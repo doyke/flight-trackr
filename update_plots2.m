@@ -1,33 +1,68 @@
-function [registre] = update_plots(registre)
-
-    if (~isempty(registre.immatriculation))
-        id = registre.immatriculation;
-    else
-        id = registre.adresse;
-    end
-
-    if (~isempty(registre.trajectoire))
-        longitudes = registre.trajectoire(1,:);
-        latitudes = registre.trajectoire(2,:);
-        altitudes = registre.trajectoire(3,:);
+function plots = update_plots2(plots, registres, id)
+    [n,m] = size(id);
+    j = true(n,m);
+    varplot = repmat(init_var(2), [n,m]);
+    id_cell = num2cell(id);
+    [varplot.id] = deal(id_cell{:});
     
-        longitude = longitudes(end);    % Longitude de l'avion
-        latitude = latitudes(end);     % Latitude de l'avion
-        altitude = altitudes(end);
-
-        if (~isempty(registre.plot1) && ~isempty(registre.plot2) && ~isempty(registre.plot3))
-            % on enlève ce qui a déjà été tracé
-            delete(registre.plot1);
-            delete(registre.plot2);
-            delete(registre.plot3);
+    if (~isempty(plots))
+        liste = [plots.id];
+        [k,l] = ismember(liste, id);
+        if (~isempty(k))
+            delete([plots(k).trajectoire]);
+            delete([plots(k).position]);
+            delete([plots(k).texte]);
+            varplot(l(k)) = plots(k);
+            plots(k) = [];
+            j(l(k)) = false;
         end
-
+    end
+    
+    liste = [registres.id];
+    [~, i] = ismember(liste, id);
+    adresses = dec2hex(id, 6);
+    
+    [immat, airline, category, country] = adresse2immat2(adresses(j,:));
+    [varplot(j).immat] = deal(immat{:});
+    [varplot(j).airline] = deal(airline{:});
+    [varplot(j).category] = deal(category{:});
+    [varplot(j).country] = deal(country{:});
+    
+    adresses = cellstr(adresses);
+    [varplot.adresse] = deal(adresses{:});
+    
+    for k = 1:m
+        cond = (i == k);
+        
+        adresse = adresses{k};
+        
+        % Choix de l'affichage du texte
+        if (isempty(varplot(k).immat))
+            texte = adresse;
+        else
+            texte = varplot(k).immat;
+        end
+        
+        % Trajectoire
+        longitudes = [registres(cond).longitude];
+        latitudes = [registres(cond).latitude];
+        altitudes = [registres(cond).altitude];
+        
+        % Position actuelle
+        longitude = longitudes(end);
+        latitude = latitudes(end);
+        altitude = altitudes(end);
+        
+        % Interpolation de la trajectoire
         points = fnplt(cscvn([longitudes;latitudes;altitudes]));
 
-        registre.plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
-        registre.plot2 = plot3(longitude, latitude,  altitude,'.b', 'MarkerSize', 8);
-        registre.plot3 = text(longitude+0.05, latitude, altitude, id,'color','b');
+        % Tracé de la trajectoire
+        varplot(k).trajectoire = plot3(points(1,:),points(2,:), points(3,:), 'b:');
+        varplot(k).position = plot3(longitude, latitude,  altitude,'.b', 'MarkerSize', 8);
+        varplot(k).texte = text(longitude+0.05, latitude, altitude, texte,'color','b');
     end
+    
+    plots = cat(2,plots,varplot);
 end
 
 function [x,y,sizeval,w,origint,p,tolred] = chckxywp(x,y,nmin,w,p,~)

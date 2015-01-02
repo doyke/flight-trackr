@@ -1,4 +1,4 @@
-function [immat, airline, category, country] = adresse2immat(adresse)
+    adresses = {'0A004A' '3443D2' '479587' '4B1A65' '4B1A66'};
     
     dbpath = [pwd '/PlaneInfo.db'];
     URL = ['jdbc:sqlite:' dbpath];
@@ -52,5 +52,3 @@ function [immat, airline, category, country] = adresse2immat(adresse)
 
     close(curs);
     close(conn);
-
-end
