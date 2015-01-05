@@ -1,49 +1,15 @@
 function varargout = plot_osm_map(varargin)
-% function h = plot_google_map(varargin)
-% Plots a google map on the current axes using the Google Static Maps API
+% function h = plot_osm_map(varargin)
+% Plots a OSM map on the current axes using the Static MapBox API
 %
 % USAGE:
-% h = plot_google_map(Property, Value,...)
+% h = plot_osm_map(Property, Value,...)
 % Plots the map on the given axes. Used also if no output is specified
 %
-% Or:
-% [lonVec latVec imag] = plot_google_map(Property, Value,...)
-% Returns the map without plotting it
 %
 % PROPERTIES:
-%    Height (640)   - Height of the image in pixels (max 640)
-%    Width  (640)   - Width of the image in pixels (max 640)
-%    Scale (2)      - (1/2) Resolution scale factor. Using Scale=2 will
-%                     double the resulotion of the downloaded image (up
-%                     to 1280x1280) and will result in finer rendering,
-%                     but processing time will be longer.
-%    MapType        - ('roadmap') Type of map to return. Any of [roadmap, 
-%                     satellite, terrain, hybrid]. See the Google Maps API for
-%                     more information. 
-%    Alpha (1)      - (0-1) Transparency level of the map (0 is fully
-%                     transparent). While the map is always moved to the
-%                     bottom of the plot (i.e. will not hide previously
-%                     drawn items), this can be useful in order to increase
-%                     readability if many colors are plotted 
-%                     (using SCATTER for example).
 %    Marker         - The marker argument is a text string with fields
-%                     conforming to the Google Maps API. The
-%                     following are valid examples:
-%                     '43.0738740,-70.713993' (default midsize orange marker)
-%                     '43.0738740,-70.713993,blue' (midsize blue marker)
-%                     '43.0738740,-70.713993,yellowa' (midsize yellow
-%                     marker with label "A")
-%                     '43.0738740,-70.713993,tinyredb' (tiny red marker
-%                     with label "B")
-%    Refresh (1)    - (0/1) defines whether to automatically refresh the
-%                     map upon zoom/pan action on the figure.
-%    AutoAxis (1)   - (0/1) defines whether to automatically adjust the axis
-%                     of the plot to avoid the map being stretched.
-%                     This will adjust the span to be correct
-%                     according to the shape of the map axes.
-%    FigureResizeUpdate (1) - (0/1) defines whether to automatically refresh the
-%                     map upon resizing the figure. This will ensure map
-%                     isn't stretched after figure resize.
+%                     conforming to the MapBox API.
 % OUTPUT:
 %    h              - Handle to the plotted map
 %
@@ -54,11 +20,6 @@ function varargout = plot_osm_map(varargin)
 %
 % References:
 %  http://www.mathworks.com/matlabcentral/fileexchange/24113
-%  http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/
-%  http://developers.google.com/maps/documentation/staticmaps/
-%
-% Acknowledgements:
-%  Val Schmidt for his submission of get_google_map.m
 %
 % Author:
 %  Zohar Bar-Yehuda
@@ -248,7 +209,7 @@ url = [preamble mapid marker location zoomStr sizeStr format keyStr];
 try
     urlwrite(url, filename);
 catch % error downloading map
-    sprintf(['Unable to download map form Google Servers.\n' ...
+    sprintf(['Unable to download map form OSM Servers.\n' ...
         'Possible reasons: no network connection, quota exceeded, or some other error.\n' ...
         'Consider using an API key if quota problems persist.\n\n' ...
         'To debug, try pasting the following URL in your browser, which may result in a more informative error:\n%s'], url);

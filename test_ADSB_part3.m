@@ -37,14 +37,16 @@ Ts = 1/Rb;
 registres = [];
 plots = [];
 
-%% Affichage de la carte avant de commencer
-disp('Chargement de la carte ...')
 figure(1)
-plot(LON_REF,LAT_REF,'.r','MarkerSize',20);% On affiche l'aeroport de Merignac sur la carte
-text(LON_REF+0.05,LAT_REF,'Position actuelle','color','r')
-plot_osm_map() % On affiche une carte sans le nom des villes
-xlabel('Longitude en degre');
-ylabel('Latitude en degre');
+% On affiche l'aéroport de Mérignac sur la carte
+plot(LON_REF,LAT_REF,'.r','MarkerSize',20);
+text(LON_REF+0.05,LAT_REF,'Merignac airport','color','r')
+
+% On affiche une carte sans le nom des villes
+plot_osm_map();
+
+xlabel('Longitude en degré');
+ylabel('Latitude en degré');
 hold on
 drawnow
 
@@ -91,11 +93,12 @@ absBuffer = abs_cplxBuffer.abs_cplxBuffer;
 realBuffer = real_cplxBuffer.real_cplxBuffer;
 
 % Décodage du signal en trames
-trames = unique(decodage_buffer(absBuffer, f_se), 'rows', 'stable');
+trames = decodage_absbuffer(absBuffer, f_se);
 
 % Décodage des trames
-[registres, plots] = update_registres2(registres, plots, trames, LON_REF, LAT_REF);
-% registres = update_registres(registres, trames, LON_REF, LAT_REF);
+if (~isempty(trames))
+    [registres, plots] = update_registres(registres, plots, trames, LON_REF, LAT_REF);
+end
 toc
 %end
 %% fermeture des flux

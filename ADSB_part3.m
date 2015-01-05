@@ -13,49 +13,52 @@ javaaddpath('./sqlite-jdbc-3.8.7.jar');
 
 %% Constants definition
 PORT = 1234;
-MER_LON = -0.710648; % Longitude de l'a?roport de M?rignac
-MER_LAT = 44.836316; % Latitude de l'a?roport de M?rignac
+MER_LON = -0.710648;    % Longitude de l'aéroport de Mérignac
+MER_LAT = 44.836316;    % Latitude de l'aéroport de Mérignac
 
-%% ParamÃƒÂ¨tres Utilisateur
-Fc = 1090e6; % La fr?quence porteuse
-Rs = 4e6; % Le rythme d'?chantillonnage (pas plus de 4Mhz)
+%% Paramètres Utilisateur
+Fc = 1090e6;            % La fréquence porteuse
+Rs = 4e6;               % Le rythme d'échantillonnage (pas plus de 4Mhz)
 T_e = 1/Rs;
 
-antenna = 'TX/RX'; % Port de l'usrp sur lequel est branch?e l'antenne
-antenna_gain = 40; % Gain d'antenne
+antenna = 'TX/RX';      % Port de l'usrp sur lequel est branchée l'antenne
+antenna_gain = 40;      % Gain d'antenne
 
-secInBuffer = 0.5; % dur?e du buffer en secondes
+secInBuffer = 0.5;      % durée du buffer en secondes
 
-%% Autres param?tres
-Rb = 1e6;% d?bit binaire
-N_bits = 112;
-NsB = floor(Rs/Rb); % nombre d'?chantillons par symbole
+%% Autres paramètres
+Rb = 1e6;               % débit binaire
+NsB = floor(Rs/Rb);     % nombre d'échantillons par symbole
 f_se = NsB;
-cplxSamplesInBuffer = secInBuffer*Rs; % dur?e en secondes
+cplxSamplesInBuffer = secInBuffer*Rs; % durée en secondes
 
 Ts = 1/Rb;
-s_p = [1 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0];                % s_p au rythme 0.5?s
-s_p = upsample(s_p, Ts/(0.5E-6));
-longueur_trame = length(s_p) + N_bits * f_se;
 
-p = [-ones(1,f_se/2) ones(1,f_se/2)]/2;
-p = p / norm(p);
 registres = [];
+plots = [];
 
 %% Affichage de la carte avant de commencer
 disp('Chargement de la carte ...')
-figure(1);
-plot(MER_LON,MER_LAT,'.r','MarkerSize',20);
-text(MER_LON+0.05,MER_LAT,'Merignac airport','color','b') % On affiche l'a?roport de M?rignac sur la carte
-plot_google_map('MapType','terrain','ShowLabels',0) % On affiche une carte sans le nom des villes
-xlabel('Longitude en degre');
-ylabel('Latitude en degre');
+
+% La fonction plot_osm_map affiche des longitudes/lattitudes en degré décimaux
+REF_LON = -0.710648;	% Longitude de l'aéroport de Merignac
+REF_LAT = 44.836316;	% Latitude de l'aéroport de Merignac
+
+figure(1)
+% On affiche l'aéroport de Mérignac sur la carte
+plot(REF_LON,REF_LAT,'.r','MarkerSize',20);
+text(REF_LON+0.05,REF_LAT,'Merignac airport','color','r')
+
+% On affiche une carte sans le nom des villes
+plot_osm_map();
+
+xlabel('Longitude en degré');
+ylabel('Latitude en degré');
 hold on
 drawnow
 
-
 %% Lancement du server
-my_server = ServerSocket (PORT); % D?finition d'un server tcp sur le port 1234
+my_server = ServerSocket (PORT); % Définition d'un server tcp sur le port 1234
 
 % Affichage des lignes de commande pour lancer le client
 disp('Pour lancer le client taper le code suivant dans une console :')
@@ -65,9 +68,9 @@ disp(['python2.7 uhd_adsb_tcp_client.py -s ',num2str(Rs), ' -f ', num2str(Fc), '
 disp('----------------------------------------------------------------------------------------------------------------------')
 disp('En attente de connexion client...')
 socket = my_server.accept; % attente de connexion client
-disp('Connexion acceptee')
+disp('Connexion acceptée')
 
-% Le n?cessaire pour aller lire les paquets recus par tcp
+% Le nécessaire pour aller lire les paquets reçus par tcp
 my_input_stream = socket.getInputStream;
 my_data_input_stream = DataInputStream(my_input_stream);
 data_reader = DataReader(my_data_input_stream);
@@ -79,47 +82,20 @@ while ~(my_input_stream.available)
 end
 
 % Lorsque le buffer est non-vide on commence le traitement
-disp('Reception...')
+disp('Réception...')
 
 %% Boucle principale
 while my_input_stream.available % tant qu'on recoit quelque chose on boucle
     disp('new buffer')
-    int8Buffer = data_reader.readBuffer(cplxSamplesInBuffer*4)'; % Un complexe est code sur 2 entiers 16 bits soit 4 octets et readBuffer lit des octets.
+    int8Buffer = data_reader.readBuffer(cplxSamplesInBuffer*4)'; % Un complexe est codé sur 2 entiers 16 bits soit 4 octets et readBuffer lit des octets.
     int16Buffer = typecast(int8Buffer,'int16'); % On fait la conversion de 2 entiers 8 bits ÃƒÂ  1 entier 16 bits
-    cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelacees, on desentrelace pour avoir le buffer complexe.
-    %% Code utilisateur
+    cplxBuffer = double(int16Buffer(1:2:end)) + 1i *double(int16Buffer(2:2:end)); % Les voies I et Q sont entrelacées, on désentrelace pour avoir le buffer complexe.
+    
+    % Code utilisateur
     absBuffer = abs(cplxBuffer);
-    n = 0:longueur_trame:length(absBuffer) - longueur_trame - 100;
-
-    for k = 1:length(n)-1
-
-        Buffer = absBuffer(n(k)+1:n(k+1)+100);
-
-        [delta_t_hat, rho] = estimation_sous_optimale(Buffer, s_p);
-
-        % on s'evite des calculs
-        if (rho < 0.7)
-            continue;
-        end
-
-        % synchronisation
-        y_l_desync = Buffer(length(s_p)+delta_t_hat+1:length(s_p)+delta_t_hat+N_bits*f_se);
-
-        % offset
-        y_l_unoffset = (y_l_desync + median(findpeaks(-y_l_desync)));
-        y_l_unoffset = y_l_unoffset / median(findpeaks(y_l_unoffset));
-
-        r_l = conv(y_l_unoffset, p);
-
-        if (length(r_l) < N_bits * f_se)
-            r_l = [r_l zeros(1,N_bits*f_se - length(r_l))];
-        end
-
-        r = downsample(r_l(f_se:N_bits*f_se), f_se);
-        
-        trame = r >= 0;
-        
-        registres = update_registres(registres, trame, MER_LON, MER_LAT);
+    trames = decodage_absbuffer(absBuffer, f_se);
+    if (~isempty(trames))
+        [registres, plots] = update_registres(registres, plots, trames, LON_REF, LAT_REF);
     end
 end
 

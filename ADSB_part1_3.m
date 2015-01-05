@@ -1,5 +1,5 @@
-clear all;
-close all;
+%clear all;
+%close all;
 %% Initialisation des variables
 f_e = 20E6;                                     % fr?quence d'?chantillonnage 20MHz
 T_e = 1/f_e;
@@ -31,7 +31,7 @@ for i = 1:length(EbN0)
     fprintf('\b\b\b %d\n', EbN0(i));
     
     % garantie de la valeur du TEB (erreur >= 100)
-    while erreur < 1E3
+    while erreur < 10^2 || iteration < 5E4
         
         sigma_n_l = 1/(2*(10.^(EbN0(i)/10)));           % calcul de la variance du bruit en fonction du rapport SNR
         
@@ -54,7 +54,7 @@ for i = 1:length(EbN0)
 
         % r?ception
         y_l = s_l_sync + n_l;
-        [delta_t_hat, delta_f_hat] = estimation2(y_l, s_p, T_e);
+        [delta_t_hat, delta_f_hat] = estimation(y_l, s_p, T_e);
         
         % synchronisation
         y_l_desync = y_l(length(s_p)+delta_t_hat+1:end).*exp(1i*2*pi*delta_f.*(1:length(y_l)-length(s_p)-delta_t_hat));

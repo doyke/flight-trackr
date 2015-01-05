@@ -1,35 +1,86 @@
-function [registre] = update_plots(registre)
+function plots = update_plots(plots, registres, id)
 
-    if (~isempty(registre.immatriculation))
-        id = registre.immatriculation;
-    else
-        id = registre.adresse;
-    end
+    % La fonction update_plots met à jour la carte en prenant comme
+    % arguments :
+    %       plots           structure indexant tous les tracés déjà présents
+    %       registres       tous les registres
+    %       id              id des avions nécessitant une mise à jour sur la carte
 
-    if (~isempty(registre.trajectoire))
-        longitudes = registre.trajectoire(1,:);
-        latitudes = registre.trajectoire(2,:);
-        altitudes = registre.trajectoire(3,:);
+    [n,m] = size(id);
+    j = true(n,m);
+    varplot = repmat(init_var(2), [n,m]);
+    id_cell = num2cell(id);
+    [varplot.id] = deal(id_cell{:});
     
-        longitude = longitudes(end);    % Longitude de l'avion
-        latitude = latitudes(end);     % Latitude de l'avion
-        altitude = altitudes(end);
-
-        if (~isempty(registre.plot1) && ~isempty(registre.plot2) && ~isempty(registre.plot3))
-            % on enlève ce qui a déjà été tracé
-            delete(registre.plot1);
-            delete(registre.plot2);
-            delete(registre.plot3);
+    if (~isempty(plots))
+        % Recherche s'il y a déjà un tracé pré-existant
+        liste = [plots.id];
+        [k,l] = ismember(liste, id);
+        % Si présence, suppression des anciens tracés
+        if (~isempty(k))
+            delete([plots(k).trajectoire]);
+            delete([plots(k).position]);
+            delete([plots(k).texte]);
+            varplot(l(k)) = plots(k);
+            plots(k) = [];
+            j(l(k)) = false;
         end
-
-        points = fnplt(cscvn([longitudes;latitudes;altitudes]));
-
-        registre.plot1 = plot3(points(1,:),points(2,:), points(3,:), 'b:');
-        registre.plot2 = plot3(longitude, latitude,  altitude,'.b', 'MarkerSize', 8);
-        registre.plot3 = text(longitude+0.05, latitude, altitude, id,'color','b');
     end
+    
+    % Recherche des positions pour chaque adresse
+    liste = [registres.id];
+    [~, i] = ismember(liste, id);
+    adresses = dec2hex(id, 6);
+    
+    % Recherche de l'immatriculation, de la compagnie aérienne, de la
+    % catégorie et du pays.
+    if (sum(j))
+        [immat, airline, category, country] = adresse2immat(adresses(j,:));
+        [varplot(j).immat] = deal(immat{:});
+        [varplot(j).airline] = deal(airline{:});
+        [varplot(j).category] = deal(category{:});
+        [varplot(j).country] = deal(country{:});
+    end
+    
+    adresses = cellstr(adresses);
+    [varplot.adresse] = deal(adresses{:});
+    
+    for k = 1:m
+        cond = (i == k);
+        
+        adresse = adresses{k};
+        
+        % Choix de l'affichage du texte
+        if (isempty(varplot(k).immat))
+            texte = adresse;
+        else
+            texte = varplot(k).immat;
+        end
+        
+        % Trajectoire
+        longitudes = [registres(cond).longitude];
+        latitudes = [registres(cond).latitude];
+        %altitudes = [registres(cond).altitude];
+        
+        % Position actuelle
+        longitude = longitudes(end);
+        latitude = latitudes(end);
+        %altitude = altitudes(end);
+        
+        % Interpolation de la trajectoire
+        points = fnplt(cscvn([longitudes;latitudes]));
+
+        % Tracé de la trajectoire
+        varplot(k).trajectoire = plot(points(1,:),points(2,:), points(3,:), 'b:');
+        varplot(k).position = plot(longitude, latitude,'.b', 'MarkerSize', 8);
+        varplot(k).texte = text(longitude+0.05, latitude, texte,'color','b');
+    end
+    
+    plots = cat(2,plots,varplot);
 end
 
+% Fonctions pour les versions antérieures de MATLAB (ces fonctions sont 
+% issues de la version R2014b)
 function [x,y,sizeval,w,origint,p,tolred] = chckxywp(x,y,nmin,w,p,~)
     if iscell(x)||length(find(size(x)>1))>1
        error(message('SPLINES:CHCKXYWP:Xnotvec')), end
@@ -179,7 +230,6 @@ function [x,y,sizeval,w,origint,p,tolred] = chckxywp(x,y,nmin,w,p,~)
         end
     end
 end
-
 function pp = csape(x,y,conds,valconds)
     if nargin<3, conds = [1 1]; end
 
@@ -226,7 +276,6 @@ function pp = csape(x,y,conds,valconds)
         end
     end
 end
-
 function pp = csape1(x,y,conds,valconds)
     [xi,yi,sizeval,endvals] = chckxywp(x,y,0);
     
@@ -316,7 +365,6 @@ function pp = csape1(x,y,conds,valconds)
         pp = fnchg(pp,'dz',sizeval);
     end
 end
-
 function cs = cscvn(points)
     if points(:,1)==points(:,end)  endconds = 'periodic';
     else                           endconds = 'variational';
@@ -354,7 +402,6 @@ function cs = cscvn(points)
         end
     end
 end
-
 function varargout = fnbrk(fn, varargin)
     if nargin>1
         np = max(1,nargout);
@@ -427,7 +474,6 @@ function varargout = fnbrk(fn, varargin)
         end
     end
 end
-
 function [points,t] = fnplt(f,varargin)
     symbol='';
     interv=[];
@@ -644,7 +690,6 @@ function [points,t] = fnplt(f,varargin)
         end
     end
 end
-
 function iErrorSecondOutputForVectorValued( numArgOut )
     if numArgOut >= 2
         exception = MException( 'SPLINES:FNPLT:SecondOutputForVectorValued', ...
@@ -652,7 +697,6 @@ function iErrorSecondOutputForVectorValued( numArgOut )
         throwAsCaller( exception );
     end
 end
-
 function varargout = ppbrk(pp,varargin)
     if ~isstruct(pp)
         if pp(1)~=10
@@ -769,7 +813,6 @@ function varargout = ppbrk(pp,varargin)
         end
     end
 end
-
 function pppart = ppbrk1(pp,part)
     if isempty(part)||ischar(part)
         pppart = pp;
@@ -782,7 +825,6 @@ function pppart = ppbrk1(pp,part)
        pppart = pppce(pp,part(1));
     end
 end
-
 function ppcut = ppcut(pp,interv)
     xl = interv(1); xr = interv(2);
 
@@ -825,7 +867,6 @@ function ppcut = ppcut(pp,interv)
     ppcut = ppmak([xl pp.breaks(jl+1:jr) xr], ...
                             pp.coefs(di*(jl-1)+(1:di*(jr-jl+1)),:),di);
 end
-
 function pppce = pppce(pp,j)
     if (0<j)&&(j<=pp.pieces)
     	di = pp.dim;
@@ -835,7 +876,6 @@ function pppce = pppce(pp,j)
         error(message('SPLINES:PPBRK:wrongpieceno', sprintf( '%g', j )));
     end
 end
-
 function pp = ppmak(breaks,coefs,d)
     if nargin==0
         breaks=input('Give the (l+1)-vector of breaks  >');
@@ -867,7 +907,6 @@ function pp = ppmak(breaks,coefs,d)
     pp.order = k;
     pp.dim = sizeval;
 end
-
 function [breaks,coefs,sizeval,l,k] = iMultivariateSpline(breaks,coefs,sizec)
     m = length(breaks);
     if length(sizec)<m
@@ -890,7 +929,6 @@ function [breaks,coefs,sizeval,l,k] = iMultivariateSpline(breaks,coefs,sizec)
         breaks{i} = reshape(breaks{i},1,l(i)+1);
     end
 end
-
 function [coefs,sizeval,l,k] = iUnivariateWithoutD(breaks,coefs,sizec)
     if isempty(coefs)
         error(message('SPLINES:PPMAK:emptycoefs'))
@@ -910,7 +948,6 @@ function [coefs,sizeval,l,k] = iUnivariateWithoutD(breaks,coefs,sizec)
         coefs = reshape(permute(reshape(coefs,[d,k,l]),[1,3,2]),d*l,k);
     end
 end
-
 function [coefs,sizeval,l,k] = iUnivariateWithD(breaks,coefs,sizec,d)
     if length(d)==1
         k = sizec(end);
@@ -933,7 +970,6 @@ function [coefs,sizeval,l,k] = iUnivariateWithD(breaks,coefs,sizec,d)
     end
     sizeval = d;
 end
-
 function v = ppual(pp,x,left)
     if ~isstruct(pp)
         pp = fn2fm(pp);
@@ -1023,7 +1059,6 @@ function v = ppual(pp,x,left)
         v = ppual1(pp,x,left);
     end
 end
-
 function v = ppual1(pp,x,left)
     [mx,nx] = size(x); lx = mx*nx; xs = reshape(x,1,lx);
 
@@ -1054,7 +1089,6 @@ function v = ppual1(pp,x,left)
     end
     v = reshape(v,d*mx,nx);
 end
-
 function [index,NaNx] = get_index(mesh,sites,left)
     if isempty(left)||left(1)~='l'
     	[~, index] = histc(sites,[-inf,mesh,inf]);

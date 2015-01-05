@@ -1,10 +1,17 @@
 function [found, immat, airline, category] = flightradar_reader(adresse)
     
+    % À partir d'une requête sur le site de flighradar24, nous pouvons
+    % tenter d'obtenir l'immatriculation, la compagnie aérienne et la
+    % catégorie d'un avion par le biais de son adresse.
+    
+    % Initialisaiton des variables
     found = 0;
     immat = [];
     airline = [];
     category = [];
     
+    % Tentative de récupération des informations (nécessite une connexion
+    % internet)
     try
         data = loadjson(urlread(['http://www.flightradar24.com/data/_ajaxcalls/autocomplete_airplanes.php?&term=', adresse]));
 

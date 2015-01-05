@@ -26,7 +26,7 @@ for i = 1:length(EbN0)
     % Affichage du traitement en cours (parce que c'est un peu long)
     fprintf('\b\b\b %d\n', EbN0(i));
     
-	while erreur < 1E2
+	while erreur < 1E3
         sigma_n_l = 1/(2*(10.^(EbN0(i)/10)));           % calcul de la variance du bruit en fonction du rapport SNR
 
         b_k = randi([0 1], 1, N_bits);                  % g?n?ration de la s?quence binaire
@@ -62,6 +62,6 @@ hold on
 semilogy(EbN0, TEB_th,'r');
 hold off
 title('Evolution du TEB');
-legend('TEB pratique','TEB th?orique');
+legend('TEB pratique','TEB théorique');
 xlabel('(E_b/N_0)_{dB}');
 ylabel('TEB');

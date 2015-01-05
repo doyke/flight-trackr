@@ -1,56 +1,73 @@
-function [immat, airline, category, country] = adresse2immat(adresse)
+function [immat, airline, category, country] = adresse2immat(adresses)
     
+    % La fonction adresse2immat va chercher l'immatriculation, la compagnie
+    % aérienne, la catégorie et le pays de l'avion dans notre base de
+    % données. Si rien n'a été trouvé, on va chercher les informations sur
+    % le site de flighradar24.
+    
+    % Initialisation des variables
+    n = size(adresses,1);
+    immat = cell(n,1);
+    airline = cell(n,1);
+    category = cell(n,1);
+    country = cell(n,1);
+
     dbpath = [pwd '/PlaneInfo.db'];
     URL = ['jdbc:sqlite:' dbpath];
 
+    % Connexion à la base de données
     conn = database('','','','org.sqlite.JDBC',URL);
     tablename = 'immatriculation';
     colnames = {'address','immat','category','country','airline'};
-    
-    adresse_quote = ['"' adresse '"'];
-    address_query = ['select * from ' tablename ' where address = ' adresse_quote];
-    curs = exec(conn,address_query);
-    curs = fetch(curs);
-    cursData = curs.Data;
-    
-    % Ajout complémentaire des infos via flightradar24
-    if (strcmp(cursData, 'No Data'))
-        
-        country = [];
-        [found, immat, airline, category] = flightradar_reader(adresse);
-        
-        if (found)
-            data = {adresse, immat, category, '', airline};
-            datainsert(conn, tablename, colnames, data);
-        end
-    else
-        immat = cursData{2};
-        category = cursData{3};
-        country = cursData{4};
-        airline = cursData{5};
-        
-        if (isempty(airline) || strcmp(airline, 'null') || isempty(category) || strcmp(category, 'null'))
-            [found, ~, airline, category] = flightradar_reader(adresse);
 
+    % Pour chaque adresse, on recherche l'immatriculation, la catégorie, le
+    % pays et la compagnie aérienne
+    for k = 1:size(adresses, 1)
+        adresse = adresses(k, :);
+        
+        % Exécution de la requête
+        query = sprintf('select * from %s where address = "%s"', tablename, adresse);
+        curs = fetch(exec(conn,query));
+        cursData = curs.Data;
+        close(curs);
+
+        % Ajout complémentaire des infos via flightradar24
+        if (strcmp(cursData, 'No Data'))
+            [found, data1, data2, data3] = flightradar_reader(adresse);
             if (found)
-                airline_quote = ['"' airline '"'];
-                insert_query = ['update ' tablename ' set airline = ' airline_quote ' where address = ' adresse_quote];
-                curs = exec(conn, insert_query);
-                close(curs);
-
-                category_quote = ['"' category '"'];
-                insert_query = ['update ' tablename ' set category = ' category_quote ' where address = ' adresse_quote];
-                curs = exec(conn, insert_query);
-                close(curs);
+                data = {adresse, data1, data3, '', data2};
+                datainsert(conn, tablename, colnames, data);
+                
+                immat(k) = {data1};
+                airline(k) = {data2};
+                category(k) = {data3};
             end
-        end
-        
-        if (isempty(country) || strcmp(country, 'null'))
-            country = [];
+        else
+            immat(k) = cellstr(cursData{2});
+            data2 = cursData{5};
+            data3 = cursData{3};
+            data4 = cursData{4};
+
+            if (isempty(data2) || strcmp(data2, 'null') || isempty(data3) || strcmp(data3, 'null'))
+                [found, ~, data2, data3] = flightradar_reader(adresse);
+
+                if (found)
+                    query = sprintf('update %s set airline = "%s", category = "%s" where address = "%s"', tablename, data2, data3, adresse);
+                    curs = exec(conn, query);
+                    close(curs);
+                end
+            end
+
+            if (isempty(data4) || strcmp(data4, 'null'))
+                data4 = [];
+            end
+            
+            airline(k) = {data2};
+            category(k) = {data3};
+            country(k) = {data4};
         end
     end
-
-    close(curs);
+    
+    % Fermeture de la connexion
     close(conn);
-
 end
