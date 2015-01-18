@@ -21,9 +21,15 @@ s_s = upsample(A_k, f_se);                      % sur-?chantillonnage au rythme 
 
 s_l = 1/2 + conv(s_s, p, 'same');               % signal s_l(t)
 figure, plot(s_l(1:25*f_se));                   % affichage des 25 premiers bits
+xlabel('Temps (en µs)')
+ylabel('Amplitude (sans unité)')
+xlim([-10 510])
+ylim([-0.05 1.05])
+grid on
 
 %% Question 12
 eyediagram(s_l(1:100*f_se), 2*f_se, 2*T_s);    % diagramme de l'oeil de dur?e 2*T_s
+ylim([-0.05 1.05])
 
 %% Question 13
 s_l_tmp = s_l;
@@ -57,8 +63,8 @@ plot(f, fftshift(DSP_S_l)./sqrt(sum(DSP_S_l.^2)));
 plot(f, DSP_S_l_th./sqrt(sum(DSP_S_l_th.^2)), 'r');
 
 xlim([-f_e/2 f_e/2-f_e/N_fft]);
-legend('DSP r?elle', 'DSP th?orique');
+legend('DSP réelle', 'DSP théorique');
 title('DSP de s_l(t)');
-xlabel('Fr?quence (Hz)');
+xlabel('Fréquence (Hz)');
 ylabel('Amplitude');
 hold off

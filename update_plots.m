@@ -60,7 +60,7 @@ function plots = update_plots(plots, registres, id)
         % Trajectoire
         longitudes = [registres(cond).longitude];
         latitudes = [registres(cond).latitude];
-        %altitudes = [registres(cond).altitude];
+        altitudes = [registres(cond).altitude];
         
         % Position actuelle
         longitude = longitudes(end);
@@ -71,7 +71,7 @@ function plots = update_plots(plots, registres, id)
         points = fnplt(cscvn([longitudes;latitudes]));
 
         % Tracé de la trajectoire
-        varplot(k).trajectoire = plot(points(1,:),points(2,:), points(3,:), 'b:');
+        varplot(k).trajectoire = plot(points(1,:),points(2,:), 'b:');
         varplot(k).position = plot(longitude, latitude,'.b', 'MarkerSize', 8);
         varplot(k).texte = text(longitude+0.05, latitude, texte,'color','b');
     end
