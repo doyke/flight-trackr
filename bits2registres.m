@@ -103,6 +103,7 @@ function [vitesse_air, vitesse_sol, cap_cell] = decodage_vitesse(vecteur, subtyp
     
     vitesse_sol(cond) = num2cell(sqrt(vitesse_EW.^2 + vitesse_NS.^2));
     
+    % Cap
     direction_EW = vecteur(cond,46);
     direction_NS = vecteur(cond,57);
     

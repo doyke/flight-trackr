@@ -9,7 +9,7 @@ trames_test = trames.trames_20141120;
 registres = [];
 plots = [];
 
-% La fonction plot_osm_map affiche des longitudes/lattitudes en degré décimaux
+% La fonction plot_osm_map affiche des longitudes/lattitudes en degrés décimaux
 LON_REF = -0.710648;	% Longitude de l'aéroport de Merignac
 LAT_REF = 44.836316;	% Latitude de l'aéroport de Merignac
 
@@ -21,6 +21,7 @@ text(LON_REF+0.05,LAT_REF,'Merignac airport','color','r')
 % On affiche une carte sans le nom des villes
 plot_osm_map();
 
+% Affichage des trajectoires
 xlabel('Longitude en degré');
 ylabel('Latitude en degré');
 hold on

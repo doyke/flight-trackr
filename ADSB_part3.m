@@ -9,7 +9,7 @@ close all
 import java.net.*;
 import java.io.*;
 javaaddpath('./javaDataReader');
-javaaddpath('./sqlite-jdbc-3.8.7.jar');
+javaaddpath('./sqlite-jdbc-3.8.7.jar'); % Driver pour les requêtes vers la base de données
 
 %% Constants definition
 PORT = 1234;

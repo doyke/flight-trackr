@@ -1,14 +1,14 @@
 clear all;
 close all;
 %% Initialisation des variables
-f_e = 20E6;                                     % fr?quence d'?chantillonnage 20MHz
+f_e = 20E6;                                     % fréquence d'échantillonnage 20MHz
 T_e = 1/f_e;
-D_s = 1E6;                                      % d?bit symbole 1MHz
+D_s = 1E6;                                      % débit symbole 1MHz
 T_s = 1/D_s;
 f_se = T_s/T_e;
 N_fft = 512;                                    % nombre de points pour la FFT
 N_bits = 112;                                   % nombre de bits du message transmis
-f = ((0:N_fft-1)/N_fft - 0.5)*f_e;              % axe des fr?quences
+f = ((0:N_fft-1)/N_fft - 0.5)*f_e;              % axe des fréquences
 EbN0 = 0:10;
 %% Question 14
 P_b = zeros(1,length(EbN0));
@@ -29,11 +29,11 @@ for i = 1:length(EbN0)
 	while erreur < 1E3
         sigma_n_l = 1/(2*(10.^(EbN0(i)/10)));           % calcul de la variance du bruit en fonction du rapport SNR
 
-        b_k = randi([0 1], 1, N_bits);                  % g?n?ration de la s?quence binaire
+        b_k = randi([0 1], 1, N_bits);                  % génération de la séquence binaire
         s_b = b_k;
 
         A_k = pammod(b_k, 2);                           % association bit->symbole
-        s_s = upsample(A_k, f_se);                      % sur-?chantillonnage au rythme T_e
+        s_s = upsample(A_k, f_se);                      % sur-échantillonnage au rythme T_e
 
         s_l = 1/2 + conv(s_s, p);                       % signal s_l(t)
 
@@ -55,7 +55,7 @@ end
 TEB = P_b;
 TEB_th = 1/2*erfc(sqrt(10.^(EbN0/10)));
 
-% TEB th?orique
+% TEB théorique
 figure;
 semilogy(EbN0, TEB);
 hold on

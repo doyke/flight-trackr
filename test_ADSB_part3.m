@@ -40,7 +40,7 @@ plots = [];
 figure(1)
 % On affiche l'aéroport de Mérignac sur la carte
 plot(LON_REF,LAT_REF,'.r','MarkerSize',20);
-text(LON_REF+0.05,LAT_REF,'Merignac airport','color','r')
+text(LON_REF+0.05,LAT_REF,'Position','color','r')
 
 % On affiche une carte sans le nom des villes
 plot_osm_map();
