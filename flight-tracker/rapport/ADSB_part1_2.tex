@@ -1,0 +1,55 @@
+\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+%
+\begin{tikzpicture}[scale=0.60]
+
+\begin{axis}[%
+width=5in,
+height=4in,
+at={(1.011111in,0.641667in)},
+xmin=0,
+xmax=10,
+xlabel={$\left(\frac{E_b}{N_0}\right)_\text{dB}$},
+xmajorgrids,
+ymode=log,
+ymin=1e-06,
+ymax=0.1,
+yminorticks=true,
+ylabel={TEB},
+ymajorgrids,
+yminorgrids,
+legend style={legend cell align=left,align=left,draw=white!15!black}
+]
+\addplot [color=mycolor1,solid]
+  table[row sep=crcr]{%
+0	0.0786340852130326\\
+1	0.0551146384479718\\
+2	0.0358935742971888\\
+3	0.0225919913419913\\
+4	0.0128228120516499\\
+5	0.00605737546036053\\
+6	0.00243351633376163\\
+7	0.000767191220877421\\
+8	0.000194171137780733\\
+9	3.38054923918711e-05\\
+10	3.77367171435008e-06\\
+};
+\addlegendentry{TEB pratique};
+
+\addplot [color=red,solid]
+  table[row sep=crcr]{%
+0	0.0786496035251426\\
+1	0.0562819519765415\\
+2	0.037506128358926\\
+3	0.0228784075610853\\
+4	0.0125008180407376\\
+5	0.00595386714777866\\
+6	0.00238829078093281\\
+7	0.000772674815378444\\
+8	0.000190907774075993\\
+9	3.36272284196175e-05\\
+10	3.87210821552204e-06\\
+};
+\addlegendentry{TEB théorique};
+
+\end{axis}
+\end{tikzpicture}%
